@@ -6,18 +6,35 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network baseSepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network base"
   },
   "dependencies": {
     "@coinbase/onchainkit": "latest",
     "@farcaster/miniapp-sdk": "^0.1.8",
+    "@iexec/dataprotector": "^2.0.0-beta.20",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
+    "@nomicfoundation/hardhat-ethers": "^4.0.2",
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.1",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/hardhat-verify": "^3.0.3",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
-    "@tanstack/react-query": "^5.81.5",
+    "@tanstack/react-query": "^5.90.5",
+    "autoprefixer": "^10.4.21",
+    "ethers": "^6.15.0",
+    "hardhat": "^3.0.7",
     "next": "15.3.4",
+    "postcss": "^8.5.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.14",
     "viem": "^2.31.6",
-    "wagmi": "^2.16.3"
+    "wagmi": "^2.16.3",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -32,5 +49,6 @@
   },
   "overrides": {
     "use-sync-external-store": "^1.2.0"
-  }
+  },
+  "type": "module"
 }
