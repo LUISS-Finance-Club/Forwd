@@ -1,157 +1,132 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useState, useMemo } from "react";
+import { useAccount } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
-
-interface Forward {
-  id: number;
-  matchId: string;
-  owner: string;
-  odds: number;
-  encryptedStakeRef: string;
-  forSale: boolean;
-  price: number;
-  createdAt: number;
-}
+import { 
+  getMarketForwards, 
+  filterForwards, 
+  getUniqueMatchIds,
+  getMatchDisplayName,
+  formatPrice,
+  shortenAddress,
+  buyForwardContractCall,
+  type MarketplaceFilters 
+} from "../../lib/marketplace";
+import ForwardCard from "../../components/ForwardCard";
 
 export default function Marketplace() {
   const { isConnected, address } = useAccount();
-  const [forwardsForSale, setForwardsForSale] = useState<Forward[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [buyingForward, setBuyingForward] = useState<number | null>(null);
+  const [filters, setFilters] = useState<MarketplaceFilters>({
+    sortBy: 'newest',
+    sortOrder: 'desc',
+  });
+  const [buyingId, setBuyingId] = useState<number | null>(null);
+  const [buyError, setBuyError] = useState<string>("");
 
-  const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash,
+  // Fetch marketplace data with React Query
+  const { 
+    data: forwards = [], 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
+    queryKey: ['marketForwards'],
+    queryFn: getMarketForwards,
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  // Mock data for demonstration - in real app, fetch from contract
-  const mockForwardsForSale: Forward[] = useMemo(() => [
-    {
-      id: 3,
-      matchId: "match-1",
-      owner: "0x1234567890123456789012345678901234567890",
-      odds: 220, // 2.2x in basis points
-      encryptedStakeRef: "encrypted-ref-789",
-      forSale: true,
-      price: 1500000000000000000, // 1.5 ETH in wei
-      createdAt: Date.now() - 3600000, // 1 hour ago
-    },
-    {
-      id: 4,
-      matchId: "match-2",
-      owner: "0x0987654321098765432109876543210987654321",
-      odds: 190, // 1.9x in basis points
-      encryptedStakeRef: "encrypted-ref-101",
-      forSale: true,
-      price: 800000000000000000, // 0.8 ETH in wei
-      createdAt: Date.now() - 7200000, // 2 hours ago
-    },
-    {
-      id: 5,
-      matchId: "match-3",
-      owner: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-      odds: 250, // 2.5x in basis points
-      encryptedStakeRef: "encrypted-ref-202",
-      forSale: true,
-      price: 2000000000000000000, // 2 ETH in wei
-      createdAt: Date.now() - 1800000, // 30 minutes ago
-    },
-  ], []);
+  // Get unique match IDs for filter dropdown
+  const matchIds = useMemo(() => getUniqueMatchIds(forwards), [forwards]);
 
-  useEffect(() => {
-    // Filter out forwards owned by current user
-    const availableForwards = mockForwardsForSale.filter(forward => 
-      !address || forward.owner.toLowerCase() !== address.toLowerCase()
+  // Filter and sort forwards
+  const filteredForwards = useMemo(() => {
+    return filterForwards(forwards, filters);
+  }, [forwards, filters]);
+
+  // Filter out forwards owned by current user
+  const availableForwards = useMemo(() => {
+    if (!address) return filteredForwards;
+    return filteredForwards.filter(forward => 
+      forward.owner.toLowerCase() !== address.toLowerCase()
     );
-    setForwardsForSale(availableForwards);
-    setIsLoading(false);
-  }, [address, mockForwardsForSale]);
+  }, [filteredForwards, address]);
 
-  const handleBuyForward = async (forwardId: number, price: number) => {
-    if (!isConnected) return;
+  const handleBuy = async (forwardId: number, price: number) => {
+    if (!isConnected) {
+      setBuyError("Please connect your wallet to buy forwards");
+      return;
+    }
 
-    setBuyingForward(forwardId);
+    setBuyingId(forwardId);
+    setBuyError("");
 
     try {
-      // TODO: Replace with actual contract address after deployment
-      const contractAddress = "0x0000000000000000000000000000000000000000";
-      
-      writeContract({
-        address: contractAddress as `0x${string}`,
-        abi: [
-          {
-            name: "buyForward",
-            type: "function",
-            stateMutability: "payable",
-            inputs: [{ name: "_forwardId", type: "uint256" }],
-            outputs: [],
-          },
-        ],
-        functionName: "buyForward",
-        args: [BigInt(forwardId)],
-        value: BigInt(price),
-      });
+      await buyForwardContractCall(forwardId, price.toString());
+      // Refetch data to update the marketplace
+      refetch();
     } catch (err) {
-      console.error("Buy transaction failed:", err);
+      const errorMessage = err instanceof Error ? err.message : "Purchase failed";
+      setBuyError(errorMessage);
+      console.error("Buy error:", err);
     } finally {
-      setBuyingForward(null);
+      setBuyingId(null);
     }
   };
 
-  const formatOdds = (odds: number) => {
-    return (odds / 100).toFixed(1);
+  const updateFilter = (key: keyof MarketplaceFilters, value: string | number | undefined) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const formatPrice = (price: number) => {
-    return (price / 1e18).toFixed(2);
+  const clearFilters = () => {
+    setFilters({
+      sortBy: 'newest',
+      sortOrder: 'desc',
+    });
   };
 
-  const getMatchName = (matchId: string) => {
-    const matchNames: Record<string, string> = {
-      "match-1": "Manchester United vs Liverpool",
-      "match-2": "Barcelona vs Real Madrid", 
-      "match-3": "Bayern Munich vs Borussia Dortmund",
-    };
-    return matchNames[matchId] || matchId;
-  };
-
-  const shortenAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
+  const totalValue = availableForwards.reduce((sum, forward) => sum + forward.price, 0);
+  const averageOdds = availableForwards.length > 0 
+    ? availableForwards.reduce((sum, forward) => sum + forward.odds, 0) / availableForwards.length / 100
+    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <Link href="/" className="text-blue-200 hover:text-white transition-colors">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div className="flex-1">
+            <Link href="/" className="text-blue-200 hover:text-white transition-colors text-sm sm:text-base">
               ← Back to Home
             </Link>
-            <h1 className="text-4xl font-bold text-white mt-2">Marketplace</h1>
-            <p className="text-blue-200">Buy and sell forward positions</p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mt-2">Marketplace</h1>
+            <p className="text-blue-200 text-sm sm:text-base">Buy and sell forward positions</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
             {isConnected ? (
-              <div className="text-white">
-                <p className="text-sm text-blue-200">Connected as:</p>
-                <p className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+              <div className="text-white text-right sm:text-left">
+                <p className="text-xs sm:text-sm text-blue-200">Connected as:</p>
+                <p className="font-mono text-sm sm:text-base">{shortenAddress(address || "")}</p>
               </div>
             ) : (
-              <ConnectWallet />
+              <div className="w-full sm:w-auto">
+                <ConnectWallet />
+              </div>
             )}
           </div>
         </header>
 
-        {/* Success Message */}
-        {isSuccess && (
-          <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 mb-6">
-            <p className="text-green-200">Forward purchased successfully!</p>
-            <Link href="/positions" className="text-green-300 hover:text-green-100 underline">
-              View your positions →
-            </Link>
+        {/* Error Message */}
+        {buyError && (
+          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6">
+            <p className="text-red-200">{buyError}</p>
+            <button 
+              onClick={() => setBuyError("")}
+              className="text-red-300 hover:text-red-100 text-sm underline mt-1"
+            >
+              Dismiss
+            </button>
           </div>
         )}
 
@@ -159,17 +134,14 @@ export default function Marketplace() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">{forwardsForSale.length}</div>
+              <div className="text-3xl font-bold text-white">{availableForwards.length}</div>
               <div className="text-blue-200 text-sm">Forwards for Sale</div>
             </div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
             <div className="text-center">
               <div className="text-3xl font-bold text-white">
-                {forwardsForSale.length > 0 ? 
-                  (forwardsForSale.reduce((sum, f) => sum + f.price, 0) / 1e18).toFixed(1) : 
-                  "0"
-                }
+                {formatPrice(totalValue)}
               </div>
               <div className="text-blue-200 text-sm">Total Value (ETH)</div>
             </div>
@@ -177,13 +149,90 @@ export default function Marketplace() {
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
             <div className="text-center">
               <div className="text-3xl font-bold text-white">
-                {forwardsForSale.length > 0 ? 
-                  (forwardsForSale.reduce((sum, f) => sum + f.odds, 0) / forwardsForSale.length / 100).toFixed(1) : 
-                  "0"
-                }x
+                {averageOdds.toFixed(1)}x
               </div>
               <div className="text-blue-200 text-sm">Average Odds</div>
             </div>
+          </div>
+        </div>
+
+        {/* Filters and Sorting */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 mb-8">
+          <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">Filters & Sorting</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Match Filter */}
+            <div>
+              <label className="block text-blue-200 text-sm font-medium mb-2">Match</label>
+              <select
+                value={filters.matchId || ""}
+                onChange={(e) => updateFilter('matchId', e.target.value || undefined)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Matches</option>
+                {matchIds.map(matchId => (
+                  <option key={matchId} value={matchId}>
+                    {getMatchDisplayName(matchId)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Price Range */}
+            <div>
+              <label className="block text-blue-200 text-sm font-medium mb-2">Min Price (ETH)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={filters.minPrice || ""}
+                onChange={(e) => updateFilter('minPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div>
+              <label className="block text-blue-200 text-sm font-medium mb-2">Max Price (ETH)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={filters.maxPrice || ""}
+                onChange={(e) => updateFilter('maxPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="10.00"
+              />
+            </div>
+
+            {/* Sort Options */}
+            <div>
+              <label className="block text-blue-200 text-sm font-medium mb-2">Sort By</label>
+              <select
+                value={`${filters.sortBy}-${filters.sortOrder}`}
+                onChange={(e) => {
+                  const [sortBy, sortOrder] = e.target.value.split('-') as [MarketplaceFilters['sortBy'], MarketplaceFilters['sortOrder']];
+                  updateFilter('sortBy', sortBy);
+                  updateFilter('sortOrder', sortOrder);
+                }}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="newest-desc">Newest First</option>
+                <option value="newest-asc">Oldest First</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="odds-asc">Odds: Low to High</option>
+                <option value="odds-desc">Odds: High to Low</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="mt-4 flex justify-center sm:justify-end">
+            <button
+              onClick={clearFilters}
+              className="text-blue-300 hover:text-blue-100 text-sm underline px-4 py-2 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              Clear Filters
+            </button>
           </div>
         </div>
 
@@ -193,65 +242,54 @@ export default function Marketplace() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
             <p className="text-blue-200 mt-4">Loading marketplace...</p>
           </div>
-        ) : forwardsForSale.length === 0 ? (
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-semibold text-white mb-4">Error Loading Marketplace</h2>
+            <p className="text-blue-200 mb-6">Failed to load marketplace data. Please try again.</p>
+            <button
+              onClick={() => refetch()}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+            >
+              Retry
+            </button>
+          </div>
+        ) : availableForwards.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🏪</div>
             <h2 className="text-2xl font-semibold text-white mb-4">No Forwards Available</h2>
-            <p className="text-blue-200 mb-6">There are currently no forwards listed for sale.</p>
-            <Link 
-              href="/matches"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-            >
-              Lock Your Own Forward
-            </Link>
+            <p className="text-blue-200 mb-6">
+              {filters.matchId || filters.minPrice || filters.maxPrice 
+                ? "No forwards match your current filters." 
+                : "There are currently no forwards listed for sale."
+              }
+            </p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={clearFilters}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+              >
+                Clear Filters
+              </button>
+              <Link 
+                href="/matches"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+              >
+                Lock Your Own Forward
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {forwardsForSale.map((forward) => (
-              <div key={forward.id} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    {getMatchName(forward.matchId)}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                    <div>
-                      <p className="text-blue-200">Odds</p>
-                      <p className="text-white font-semibold">{formatOdds(forward.odds)}x</p>
-                    </div>
-                    <div>
-                      <p className="text-blue-200">Price</p>
-                      <p className="text-white font-semibold">{formatPrice(forward.price)} ETH</p>
-                    </div>
-                  </div>
-                  <div className="text-sm">
-                    <p className="text-blue-200">Seller</p>
-                    <p className="text-white font-mono">{shortenAddress(forward.owner)}</p>
-                  </div>
-                </div>
-
-                {/* Stake Info */}
-                <div className="bg-white/5 rounded-lg p-3 mb-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-blue-200 text-sm">Stake Amount</p>
-                    <p className="text-blue-200 text-sm">🔒 Encrypted</p>
-                  </div>
-                  <p className="text-blue-200 text-xs mt-1">
-                    Only the seller can decrypt their stake amount
-                  </p>
-                </div>
-
-                {/* Buy Button */}
-                <button
-                  onClick={() => handleBuyForward(forward.id, forward.price)}
-                  disabled={!isConnected || isPending || isConfirming || buyingForward === forward.id}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-                >
-                  {buyingForward === forward.id ? "Processing..." : 
-                   isPending ? "Confirming..." : 
-                   isConfirming ? "Processing..." :
-                   `Buy for ${formatPrice(forward.price)} ETH`}
-                </button>
-              </div>
+            {availableForwards.map((forward) => (
+              <ForwardCard
+                key={forward.forwardId}
+                forward={forward}
+                onBuy={() => handleBuy(forward.forwardId, forward.price)}
+                disabled={buyingId === forward.forwardId}
+                isBuying={buyingId === forward.forwardId}
+                currentUser={address}
+              />
             ))}
           </div>
         )}
