@@ -4,6 +4,7 @@ const ROOT_URL =
 
 /**
  * MiniApp configuration object. Must follow the Farcaster MiniApp specification.
+ * Updated with account association credentials for PreStake.
  *
  * @see {@link https://miniapps.farcaster.xyz/docs/guides/publishing}
  */
