@@ -3,6 +3,13 @@ import { useState, useEffect, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
+import { 
+  decryptStake, 
+  isDataProtectorAvailable, 
+  formatStakeAmount,
+  isMockEncryptedRef,
+  type DecryptionResult 
+} from "../../lib/iexec";
 
 interface Forward {
   id: number;
@@ -21,6 +28,7 @@ export default function Positions() {
   const [decryptedStakes, setDecryptedStakes] = useState<Record<number, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isDecrypting, setIsDecrypting] = useState<Record<number, boolean>>({});
+  const [decryptionErrors, setDecryptionErrors] = useState<Record<number, string>>({});
 
   // Mock data for demonstration - in real app, fetch from contract
   const mockForwards: Forward[] = useMemo(() => [
@@ -60,16 +68,37 @@ export default function Positions() {
     }
   }, [isConnected, address, mockForwards]);
 
-  const decryptStake = async (forwardId: number, _encryptedRef: string) => {
+  const decryptStakeAmount = async (forwardId: number, encryptedRef: string) => {
     setIsDecrypting(prev => ({ ...prev, [forwardId]: true }));
+    setDecryptionErrors(prev => ({ ...prev, [forwardId]: "" })); // Clear previous error
     
     try {
-      // Mock decryption for now - in real app, use iExec DataProtector
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async operation
-      const mockStakeAmount = Math.random() * 2 + 0.1; // Random stake between 0.1-2.1 ETH
-      setDecryptedStakes(prev => ({ ...prev, [forwardId]: mockStakeAmount }));
+      if (!isDataProtectorAvailable()) {
+        throw new Error("Wallet connection required for decryption");
+      }
+
+      // Handle mock encrypted references for testing
+      if (isMockEncryptedRef(encryptedRef)) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async operation
+        const mockStakeAmount = Math.random() * 2 + 0.1; // Random stake between 0.1-2.1 ETH
+        setDecryptedStakes(prev => ({ ...prev, [forwardId]: mockStakeAmount }));
+        return;
+      }
+
+      console.log("Decrypting stake for forward:", forwardId);
+      
+      const result: DecryptionResult = await decryptStake(encryptedRef);
+      
+      if (result.success && result.data) {
+        setDecryptedStakes(prev => ({ ...prev, [forwardId]: result.data!.stakeAmount }));
+        console.log("Decryption successful for forward:", forwardId, "Amount:", result.data.stakeAmount);
+      } else {
+        throw new Error(result.error || "Decryption failed");
+      }
     } catch (err) {
-      console.error("Decryption failed:", err);
+      const errorMessage = err instanceof Error ? err.message : "Decryption failed";
+      console.error("Decryption failed for forward:", forwardId, err);
+      setDecryptionErrors(prev => ({ ...prev, [forwardId]: errorMessage }));
     } finally {
       setIsDecrypting(prev => ({ ...prev, [forwardId]: false }));
     }
@@ -165,10 +194,21 @@ export default function Positions() {
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-blue-200 text-sm">Stake Amount</p>
                     {decryptedStakes[forward.id] ? (
-                      <p className="text-white font-semibold">{decryptedStakes[forward.id]} ETH</p>
+                      <p className="text-white font-semibold">{formatStakeAmount(decryptedStakes[forward.id])}</p>
+                    ) : decryptionErrors[forward.id] ? (
+                      <div className="text-right">
+                        <p className="text-red-300 text-xs mb-1">Decryption failed</p>
+                        <button
+                          onClick={() => decryptStakeAmount(forward.id, forward.encryptedStakeRef)}
+                          disabled={isDecrypting[forward.id]}
+                          className="text-blue-300 hover:text-blue-100 text-sm disabled:opacity-50"
+                        >
+                          🔄 Retry
+                        </button>
+                      </div>
                     ) : (
                       <button
-                        onClick={() => decryptStake(forward.id, forward.encryptedStakeRef)}
+                        onClick={() => decryptStakeAmount(forward.id, forward.encryptedStakeRef)}
                         disabled={isDecrypting[forward.id]}
                         className="text-blue-300 hover:text-blue-100 text-sm disabled:opacity-50"
                       >
@@ -176,8 +216,11 @@ export default function Positions() {
                       </button>
                     )}
                   </div>
-                  {!decryptedStakes[forward.id] && (
+                  {!decryptedStakes[forward.id] && !decryptionErrors[forward.id] && (
                     <p className="text-blue-200 text-xs">🔒 Encrypted with iExec</p>
+                  )}
+                  {decryptionErrors[forward.id] && (
+                    <p className="text-red-300 text-xs mt-2">{decryptionErrors[forward.id]}</p>
                   )}
                 </div>
 

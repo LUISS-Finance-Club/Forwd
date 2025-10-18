@@ -3,6 +3,13 @@ import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
+import { 
+  encryptStake, 
+  isDataProtectorAvailable, 
+  isValidStakeAmount,
+  formatStakeAmount,
+  type EncryptionResult
+} from "../../../lib/iexec";
 
 interface LockFormData {
   matchId: string;
@@ -24,6 +31,7 @@ function LockPageContent({ params }: { params: Promise<{ id: string }> }) {
   });
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [encryptedRef, setEncryptedRef] = useState<string>("");
+  const [encryptionError, setEncryptionError] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   // Mock match data - in real app, fetch from API
@@ -54,23 +62,41 @@ function LockPageContent({ params }: { params: Promise<{ id: string }> }) {
   });
 
   const handleEncryptStake = async () => {
-    if (!formData.stakeAmount || formData.stakeAmount <= 0) {
-      setError("Please enter a valid stake amount");
+    if (!formData.stakeAmount || !isValidStakeAmount(formData.stakeAmount)) {
+      setError("Please enter a valid stake amount (0.0001 - 1000 ETH)");
+      return;
+    }
+
+    if (!isDataProtectorAvailable()) {
+      setError("Wallet connection required for encryption. Please connect your wallet.");
       return;
     }
 
     setIsEncrypting(true);
     setError("");
+    setEncryptionError("");
 
     try {
-      // Mock encryption for now - in real app, use iExec DataProtector
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async operation
-      const mockEncryptedRef = `encrypted-ref-${Date.now()}`;
-      setEncryptedRef(mockEncryptedRef);
-      console.log("Encrypted stake reference:", mockEncryptedRef);
+      console.log("Starting encryption process...");
+      
+      const result: EncryptionResult = await encryptStake(formData.stakeAmount, {
+        matchId: formData.matchId,
+      });
+
+      if (result.success) {
+        setEncryptedRef(result.address);
+        console.log("Encryption successful:", result.address);
+      } else {
+        const errorMsg = result.error || "Encryption failed. Please try again.";
+        setError(errorMsg);
+        setEncryptionError(errorMsg);
+        console.error("Encryption failed:", result.error);
+      }
     } catch (err) {
-      console.error("Encryption failed:", err);
-      setError("Failed to encrypt stake data. Please try again.");
+      const errorMsg = "Failed to encrypt stake data. Please try again.";
+      console.error("Encryption error:", err);
+      setError(errorMsg);
+      setEncryptionError(errorMsg);
     } finally {
       setIsEncrypting(false);
     }
@@ -191,13 +217,17 @@ function LockPageContent({ params }: { params: Promise<{ id: string }> }) {
                   </label>
                   <input
                     type="number"
-                    step="0.01"
-                    min="0.01"
+                    step="0.0001"
+                    min="0.0001"
+                    max="1000"
                     value={formData.stakeAmount}
                     onChange={(e) => setFormData(prev => ({ ...prev, stakeAmount: parseFloat(e.target.value) || 0 }))}
                     className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter stake amount"
+                    placeholder="Enter stake amount (0.0001 - 1000 ETH)"
                   />
+                  <p className="text-blue-200 text-xs mt-1">
+                    Valid range: 0.0001 - 1000 ETH
+                  </p>
                 </div>
               </div>
 
@@ -220,7 +250,7 @@ function LockPageContent({ params }: { params: Promise<{ id: string }> }) {
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                {!encryptedRef ? (
+                {!encryptedRef && !encryptionError ? (
                   <button
                     onClick={handleEncryptStake}
                     disabled={!isConnected || isEncrypting || !formData.stakeAmount}
@@ -228,11 +258,30 @@ function LockPageContent({ params }: { params: Promise<{ id: string }> }) {
                   >
                     {isEncrypting ? "Encrypting..." : "Encrypt Stake"}
                   </button>
+                ) : encryptionError ? (
+                  <div className="space-y-3">
+                    <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+                      <p className="text-red-200 text-sm">❌ Encryption failed</p>
+                      <p className="text-red-300 text-xs mt-1">{encryptionError}</p>
+                    </div>
+                    <button
+                      onClick={handleEncryptStake}
+                      disabled={!isConnected || isEncrypting || !formData.stakeAmount}
+                      className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+                    >
+                      🔄 Retry Encryption
+                    </button>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
                       <p className="text-green-200 text-sm">✅ Stake encrypted successfully</p>
-                      <p className="text-green-300 text-xs font-mono">{encryptedRef.slice(0, 20)}...</p>
+                      <p className="text-green-300 text-sm mt-1">
+                        Amount: {formatStakeAmount(formData.stakeAmount)}
+                      </p>
+                      <p className="text-green-300 text-xs font-mono mt-2 break-all">
+                        {encryptedRef.slice(0, 20)}...
+                      </p>
                     </div>
                     
                     <button
