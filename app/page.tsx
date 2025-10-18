@@ -1,9 +1,13 @@
 "use client";
+
 import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import MobileNav from "../components/MobileNav";
 
 export default function HomePage() {
@@ -18,163 +22,160 @@ export default function HomePage() {
   }, [setFrameReady, isFrameReady]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <MobileNav isConnected={isConnected} address={address} />
-      
-      <main className="mobile-container pt-4">
-        {/* Hero Section */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-bounce-in">
-            <span className="text-3xl">⚽</span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 pb-20">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span className="text-lg font-bold">⚽</span>
+            </div>
+            <span className="text-xl font-bold">PreStake</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to PreStake</h1>
-          <p className="text-gray-600 text-lg">
-            Trade sports odds like markets
-          </p>
+          <ConnectWallet />
         </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <section className="text-center py-12">
+          <Badge variant="secondary" className="mb-4">
+            🚀 Now Live on Base
+          </Badge>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground mb-6">
+            Trade Sports Futures
+            <br />
+            <span className="text-primary">Like Stocks</span>
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Lock in your predictions, trade positions, and profit from sports outcomes 
+            with encrypted privacy and decentralized security.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg">
+              <Link href="/matches">
+                Browse Matches
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/marketplace">
+                View Marketplace
+              </Link>
+            </Button>
+          </div>
+        </section>
 
         {/* Wallet Connection */}
         {!isConnected && (
-          <div className="card mb-8 animate-slide-up">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🔗</span>
+          <Card className="mb-8 animate-slide-up">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🔗</span>
+                </div>
+                <CardTitle className="text-xl mb-2">Connect Your Wallet</CardTitle>
+                <CardDescription className="mb-6">
+                  Connect your wallet to start locking forwards and trading positions
+                </CardDescription>
+                <ConnectWallet />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Connect Your Wallet</h2>
-              <p className="text-gray-600 mb-6">
-                Connect your wallet to start locking forwards and trading positions
-              </p>
-              <ConnectWallet />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <Link
-            href="/matches"
-            className="card-interactive p-6 text-center animate-slide-up"
-            style={{ animationDelay: "100ms" }}
-          >
-            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-xl">⚽</span>
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Matches</h3>
-            <p className="text-sm text-gray-600">Lock your odds</p>
-          </Link>
-          
-          <Link
-            href="/marketplace"
-            className="card-interactive p-6 text-center animate-slide-up"
-            style={{ animationDelay: "200ms" }}
-          >
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-xl">🏪</span>
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Marketplace</h3>
-            <p className="text-sm text-gray-600">Trade positions</p>
-          </Link>
-          
-          <Link
-            href="/positions"
-            className="card-interactive p-6 text-center animate-slide-up"
-            style={{ animationDelay: "300ms" }}
-          >
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-xl">📈</span>
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Positions</h3>
-            <p className="text-sm text-gray-600">View your forwards</p>
-          </Link>
-          
-          <div className="card p-6 text-center animate-slide-up opacity-60" style={{ animationDelay: "400ms" }}>
-            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-xl">📊</span>
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Analytics</h3>
-            <p className="text-sm text-gray-600">Coming soon</p>
-          </div>
-        </div>
+        {/* Features Grid */}
+        <section className="py-12">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Why Choose PreStake?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span className="text-blue-600">🔒</span>
+                  </div>
+                  <CardTitle className="text-lg">Encrypted Privacy</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Your stake amounts are encrypted using iExec DataProtector, 
+                  ensuring complete privacy while maintaining transparency.
+                </CardDescription>
+              </CardContent>
+            </Card>
 
-        {/* Features */}
-        <div className="card mb-8 animate-slide-up" style={{ animationDelay: "500ms" }}>
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Why PreStake?</h2>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-emerald-600">🔒</span>
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600">📈</span>
+                  </div>
+                  <CardTitle className="text-lg">Trade Like Stocks</CardTitle>
                 </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Encrypted Stakes</h3>
-                  <p className="text-sm text-gray-600">Your stake amounts are encrypted using iExec DataProtector</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-blue-600">⚡</span>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Instant Trading</h3>
-                  <p className="text-sm text-gray-600">Buy and sell forward positions instantly</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-purple-600">🌐</span>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Decentralized</h3>
-                  <p className="text-sm text-gray-600">Built on Base blockchain for transparency</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Buy and sell forward contracts in a liquid marketplace. 
+                  Your positions can be traded before the match even starts.
+                </CardDescription>
+              </CardContent>
+            </Card>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="card text-center p-4 animate-slide-up" style={{ animationDelay: "600ms" }}>
-            <div className="text-2xl font-bold text-blue-600">5</div>
-            <div className="text-xs text-gray-600">Active Matches</div>
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                    <span className="text-purple-600">⚡</span>
+                  </div>
+                  <CardTitle className="text-lg">Instant Settlement</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Built on Base for fast, cheap transactions. 
+                  No waiting for confirmations or high gas fees.
+                </CardDescription>
+              </CardContent>
+            </Card>
           </div>
-          <div className="card text-center p-4 animate-slide-up" style={{ animationDelay: "700ms" }}>
-            <div className="text-2xl font-bold text-emerald-600">12</div>
-            <div className="text-xs text-gray-600">Forwards Listed</div>
-          </div>
-          <div className="card text-center p-4 animate-slide-up" style={{ animationDelay: "800ms" }}>
-            <div className="text-2xl font-bold text-purple-600">2.1x</div>
-            <div className="text-xs text-gray-600">Avg Odds</div>
-          </div>
-        </div>
+        </section>
 
-        {/* Getting Started */}
-        <div className="card animate-slide-up" style={{ animationDelay: "900ms" }}>
-          <div className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Getting Started</h2>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
-                <span className="text-gray-700">Connect your wallet</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                <span className="text-gray-700">Browse available matches</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
-                <span className="text-gray-700">Lock your forward position</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
-                <span className="text-gray-700">Trade or hold your position</span>
-              </div>
-            </div>
-        </div>
-      </div>
+        {/* Stats Section */}
+        <section className="py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="text-3xl font-bold text-primary">$0</div>
+                <CardDescription>Platform Fees</CardDescription>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="text-3xl font-bold text-primary">24/7</div>
+                <CardDescription>Trading Hours</CardDescription>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="text-3xl font-bold text-primary">100%</div>
+                <CardDescription>Decentralized</CardDescription>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="text-3xl font-bold text-primary">Base</div>
+                <CardDescription>Network</CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
       </main>
+
+      {/* Mobile Navigation */}
+      <MobileNav isConnected={isConnected} address={address} />
     </div>
   );
 }
