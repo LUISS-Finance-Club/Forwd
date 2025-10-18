@@ -1,6 +1,6 @@
-# Waitlist Mini App Quickstart
+# PreStake - Sports Finance Platform
 
-This is a demo Mini App application built using OnchainKit and the Farcaster SDK. Build a waitlist sign-up mini app for your company that can be published to the Base app and Farcaster.
+PreStake is a decentralized application that transforms sports betting into a financial market experience, allowing users to lock odds early, trade positions, and profit from odds movement rather than game outcomes. Built on Base (Coinbase's layer-2 chain) with iExec for privacy and ENS for identity, PreStake introduces a new class of ethical, educational DeFi betting.
 
 ## Prerequisites
 

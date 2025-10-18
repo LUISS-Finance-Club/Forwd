@@ -9,28 +9,28 @@ const ROOT_URL =
  */
 export const minikitConfig = {
   accountAssociation: {
-    header: "",
-    payload: "",
-    signature: ""
+    header: "eyJmaWQiOjEzOTE1MjAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhGZUQwN2FCODM5MDgwYTg1MjE4NTVGMmJhNGVGMzcwQjFBN0JhNTRiIn0",
+    payload: "eyJkb21haW4iOiJuZXctbWluaS1hcHAtcXVpY2tzdGFydC1wbHVtLnZlcmNlbC5hcHAifQ",
+    signature: "7mPrmSnwBh/GsuntNKgPT88pxn/fILjZCJofAyBNCMJ4G7QPuijkjMW4tdo6WzUtxBadxtaioQsmHwSIttXCfhs="
   },
   miniapp: {
     version: "1",
-    name: "Cubey", 
-    subtitle: "Your AI Ad Companion", 
-    description: "Ads",
+    name: "PreStake", 
+    subtitle: "Sports Finance Platform", 
+    description: "Transform sports betting into financial markets. Lock odds early, trade positions, and profit from odds movement rather than game outcomes.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
-    iconUrl: `${ROOT_URL}/blue-icon.png`,
-    splashImageUrl: `${ROOT_URL}/blue-hero.png`,
-    splashBackgroundColor: "#000000",
+    iconUrl: `${ROOT_URL}/icon.png`,
+    splashImageUrl: `${ROOT_URL}/hero.png`,
+    splashBackgroundColor: "#1a1a1a",
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
-    primaryCategory: "social",
-    tags: ["marketing", "ads", "quickstart", "waitlist"],
-    heroImageUrl: `${ROOT_URL}/blue-hero.png`, 
-    tagline: "",
-    ogTitle: "",
-    ogDescription: "",
-    ogImageUrl: `${ROOT_URL}/blue-hero.png`,
+    primaryCategory: "finance",
+    tags: ["sports", "trading", "defi", "betting", "derivatives", "base"],
+    heroImageUrl: `${ROOT_URL}/hero.png`, 
+    tagline: "Trade Sports Odds Like Financial Markets",
+    ogTitle: "PreStake - Sports Finance Platform",
+    ogDescription: "Lock odds early, trade positions, and profit from odds movement. Ethical DeFi betting on Base.",
+    ogImageUrl: `${ROOT_URL}/hero.png`,
   },
 } as const;
 

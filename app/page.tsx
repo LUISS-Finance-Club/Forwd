@@ -91,11 +91,11 @@ export default function Home() {
       
       <div className={styles.content}>
         <div className={styles.waitlistForm}>
-          <h1 className={styles.title}>Join {minikitConfig.miniapp.name.toUpperCase()}</h1>
+          <h1 className={styles.title}>Welcome to {minikitConfig.miniapp.name}</h1>
           
           <p className={styles.subtitle}>
-             Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
-            crypto marketing strategy.
+             Hey {context?.user?.displayName || "there"}, Get early access to the future of<br />
+            sports finance and DeFi betting on Base.
           </p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
@@ -110,7 +110,7 @@ export default function Home() {
             {error && <p className={styles.error}>{error}</p>}
             
             <button type="submit" className={styles.joinButton}>
-              JOIN WAITLIST
+              JOIN PRESTAKE
             </button>
           </form>
         </div>
