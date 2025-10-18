@@ -1,7 +1,6 @@
 "use client";
 
 import { useComposeCast } from '@coinbase/onchainkit/minikit';
-import { minikitConfig } from "../../minikit.config";
 import styles from "./page.module.css";
 
 export default function Success() {
