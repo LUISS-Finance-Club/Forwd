@@ -3,54 +3,57 @@ import { useState, useEffect, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
-import { 
-  decryptStake, 
-  isDataProtectorAvailable, 
-  formatStakeAmount,
-  isMockEncryptedRef,
-  type DecryptionResult 
-} from "../../lib/iexec";
+import PositionCard from "../../components/PositionCard";
+import MobileNav from "../../components/MobileNav";
 
-interface Forward {
-  id: number;
+interface Position {
+  forwardId: number;
   matchId: string;
-  owner: string;
   odds: number;
+  owner: string;
   encryptedStakeRef: string;
   forSale: boolean;
-  price: number;
+  price: bigint;
   createdAt: number;
 }
 
-export default function Positions() {
+export default function PositionsPage() {
   const { isConnected, address } = useAccount();
-  const [userForwards, setUserForwards] = useState<Forward[]>([]);
-  const [decryptedStakes, setDecryptedStakes] = useState<Record<number, number>>({});
+  const [userForwards, setUserForwards] = useState<Position[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDecrypting, setIsDecrypting] = useState<Record<number, boolean>>({});
-  const [decryptionErrors, setDecryptionErrors] = useState<Record<number, string>>({});
+  const [selectedFilter, setSelectedFilter] = useState<"all" | "for-sale" | "not-for-sale">("all");
 
-  // Mock data for demonstration - in real app, fetch from contract
-  const mockForwards: Forward[] = useMemo(() => [
+  // Enhanced mock data for demonstration
+  const mockForwards: Position[] = useMemo(() => [
     {
-      id: 1,
+      forwardId: 1,
       matchId: "match-1",
       owner: address || "0x0000000000000000000000000000000000000000",
       odds: 210, // 2.1x in basis points
-      encryptedStakeRef: "encrypted-ref-123",
+      encryptedStakeRef: "mock-encrypted-ref-1.5-1700000000000-match-1",
       forSale: false,
-      price: 0,
+      price: BigInt(0),
       createdAt: Date.now() - 86400000, // 1 day ago
     },
     {
-      id: 2,
+      forwardId: 2,
       matchId: "match-2", 
       owner: address || "0x0000000000000000000000000000000000000000",
       odds: 180, // 1.8x in basis points
-      encryptedStakeRef: "encrypted-ref-456",
+      encryptedStakeRef: "mock-encrypted-ref-0.8-1700000000000-match-2",
       forSale: true,
-      price: 1000000000000000000, // 1 ETH in wei
+      price: BigInt("1000000000000000000"), // 1 ETH in wei
       createdAt: Date.now() - 172800000, // 2 days ago
+    },
+    {
+      forwardId: 3,
+      matchId: "match-3",
+      owner: address || "0x0000000000000000000000000000000000000000",
+      odds: 250, // 2.5x in basis points
+      encryptedStakeRef: "mock-encrypted-ref-2.0-1700000000000-match-3",
+      forSale: false,
+      price: BigInt(0),
+      createdAt: Date.now() - 259200000, // 3 days ago
     },
   ], [address]);
 
@@ -68,216 +71,208 @@ export default function Positions() {
     }
   }, [isConnected, address, mockForwards]);
 
-  const decryptStakeAmount = async (forwardId: number, encryptedRef: string) => {
-    setIsDecrypting(prev => ({ ...prev, [forwardId]: true }));
-    setDecryptionErrors(prev => ({ ...prev, [forwardId]: "" })); // Clear previous error
-    
-    try {
-      if (!isDataProtectorAvailable()) {
-        throw new Error("Wallet connection required for decryption");
-      }
+  const filteredForwards = useMemo(() => {
+    if (selectedFilter === "all") return userForwards;
+    if (selectedFilter === "for-sale") return userForwards.filter(f => f.forSale);
+    return userForwards.filter(f => !f.forSale);
+  }, [userForwards, selectedFilter]);
 
-      // Handle mock encrypted references for testing
-      if (isMockEncryptedRef(encryptedRef)) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async operation
-        const mockStakeAmount = Math.random() * 2 + 0.1; // Random stake between 0.1-2.1 ETH
-        setDecryptedStakes(prev => ({ ...prev, [forwardId]: mockStakeAmount }));
-        return;
-      }
-
-      console.log("Decrypting stake for forward:", forwardId);
-      
-      const result: DecryptionResult = await decryptStake(encryptedRef);
-      
-      if (result.success && result.data) {
-        setDecryptedStakes(prev => ({ ...prev, [forwardId]: result.data!.stakeAmount }));
-        console.log("Decryption successful for forward:", forwardId, "Amount:", result.data.stakeAmount);
-      } else {
-        throw new Error(result.error || "Decryption failed");
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Decryption failed";
-      console.error("Decryption failed for forward:", forwardId, err);
-      setDecryptionErrors(prev => ({ ...prev, [forwardId]: errorMessage }));
-    } finally {
-      setIsDecrypting(prev => ({ ...prev, [forwardId]: false }));
-    }
+  const handleListForSale = async (forwardId: number) => {
+    // Simulate listing for sale
+    console.log(`Listing forward ${forwardId} for sale`);
+    // In real app, this would call the smart contract
   };
 
-  const formatOdds = (odds: number) => {
-    return (odds / 100).toFixed(1);
+  const handleDecryptStake = async (forwardId: number) => {
+    // This is handled by the PositionCard component
+    console.log(`Decrypting stake for forward ${forwardId}`);
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString();
-  };
-
-  const getMatchName = (matchId: string) => {
-    const matchNames: Record<string, string> = {
-      "match-1": "Manchester United vs Liverpool",
-      "match-2": "Barcelona vs Real Madrid", 
-      "match-3": "Bayern Munich vs Borussia Dortmund",
-    };
-    return matchNames[matchId] || matchId;
-  };
-
-  if (!isConnected) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Connect Your Wallet</h1>
-          <p className="text-blue-200 mb-6">Connect your wallet to view your forward positions</p>
-          <ConnectWallet />
-        </div>
-      </div>
-    );
-  }
+  const filterButtons = [
+    { key: "all" as const, label: "All Positions", count: userForwards.length },
+    { key: "for-sale" as const, label: "For Sale", count: userForwards.filter(f => f.forSale).length },
+    { key: "not-for-sale" as const, label: "Not For Sale", count: userForwards.filter(f => !f.forSale).length }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <Link href="/" className="text-blue-200 hover:text-white transition-colors">
-              ← Back to Home
-            </Link>
-            <h1 className="text-4xl font-bold text-white mt-2">My Positions</h1>
-            <p className="text-blue-200">View and manage your forward positions</p>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <MobileNav isConnected={isConnected} address={address} />
+      
+      <main className="mobile-container pt-4">
+        {/* Page Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">My Positions</h1>
+          <p className="text-gray-600">View and manage your forward positions</p>
+        </div>
+
+        {/* Wallet Connection Prompt */}
+        {!isConnected && (
+          <div className="card mb-8 animate-bounce-in">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🔗</span>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Connect Your Wallet</h2>
+              <p className="text-gray-600 mb-6">
+                Connect your wallet to view your forward positions
+              </p>
+              <ConnectWallet />
+            </div>
           </div>
-          <div className="text-white">
-            <p className="text-sm text-blue-200">Connected as:</p>
-            <p className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+        )}
+
+        {/* Filter Buttons */}
+        {isConnected && userForwards.length > 0 && (
+          <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
+            {filterButtons.map((filter) => (
+              <button
+                key={filter.key}
+                onClick={() => setSelectedFilter(filter.key)}
+                className={`btn-sm whitespace-nowrap ${
+                  selectedFilter === filter.key
+                    ? "btn-primary"
+                    : "btn-outline"
+                }`}
+              >
+                {filter.label}
+                <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
+                  {filter.count}
+                </span>
+              </button>
+            ))}
           </div>
-        </header>
+        )}
 
         {/* Positions List */}
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-            <p className="text-blue-200 mt-4">Loading your positions...</p>
+            <div className="spinner w-12 h-12 mx-auto"></div>
+            <p className="text-gray-600 mt-4">Loading your positions...</p>
           </div>
-        ) : userForwards.length === 0 ? (
+        ) : !isConnected ? (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">📊</div>
-            <h2 className="text-2xl font-semibold text-white mb-4">No Positions Yet</h2>
-            <p className="text-blue-200 mb-6">You haven&apos;t locked any forwards yet.</p>
-            <Link 
-              href="/matches"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-            >
-              Browse Matches
-            </Link>
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">📊</span>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Connect to View Positions</h2>
+            <p className="text-gray-600 mb-6">Connect your wallet to see your forward positions</p>
+            <ConnectWallet />
+          </div>
+        ) : filteredForwards.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">📊</span>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              {userForwards.length === 0 ? "No Positions Yet" : "No Matching Positions"}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {userForwards.length === 0 
+                ? "You haven't locked any forwards yet."
+                : "No positions match your current filter."
+              }
+            </p>
+            {userForwards.length === 0 && (
+              <Link
+                href="/matches"
+                className="btn-primary btn-md touch-manipulation"
+              >
+                <div className="flex items-center space-x-2">
+                  <span>⚽</span>
+                  <span>Browse Matches</span>
+                </div>
+              </Link>
+            )}
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {userForwards.map((forward) => (
-              <div key={forward.id} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    {getMatchName(forward.matchId)}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <p className="text-blue-200">Odds</p>
-                      <p className="text-white font-semibold">{formatOdds(forward.odds)}x</p>
-                    </div>
-                    <div>
-                      <p className="text-blue-200">Created</p>
-                      <p className="text-white font-semibold">{formatDate(forward.createdAt)}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stake Information */}
-                <div className="bg-white/5 rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-blue-200 text-sm">Stake Amount</p>
-                    {decryptedStakes[forward.id] ? (
-                      <p className="text-white font-semibold">{formatStakeAmount(decryptedStakes[forward.id])}</p>
-                    ) : decryptionErrors[forward.id] ? (
-                      <div className="text-right">
-                        <p className="text-red-300 text-xs mb-1">Decryption failed</p>
-                        <button
-                          onClick={() => decryptStakeAmount(forward.id, forward.encryptedStakeRef)}
-                          disabled={isDecrypting[forward.id]}
-                          className="text-blue-300 hover:text-blue-100 text-sm disabled:opacity-50"
-                        >
-                          🔄 Retry
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => decryptStakeAmount(forward.id, forward.encryptedStakeRef)}
-                        disabled={isDecrypting[forward.id]}
-                        className="text-blue-300 hover:text-blue-100 text-sm disabled:opacity-50"
-                      >
-                        {isDecrypting[forward.id] ? "Decrypting..." : "🔓 Decrypt"}
-                      </button>
-                    )}
-                  </div>
-                  {!decryptedStakes[forward.id] && !decryptionErrors[forward.id] && (
-                    <p className="text-blue-200 text-xs">🔒 Encrypted with iExec</p>
-                  )}
-                  {decryptionErrors[forward.id] && (
-                    <p className="text-red-300 text-xs mt-2">{decryptionErrors[forward.id]}</p>
-                  )}
-                </div>
-
-                {/* Status and Actions */}
-                <div className="space-y-2">
-                  {forward.forSale ? (
-                    <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3">
-                      <p className="text-yellow-200 text-sm font-semibold">Listed for Sale</p>
-                      <p className="text-yellow-300 text-sm">{forward.price / 1e18} ETH</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
-                        List for Sale
-                      </button>
-                      <Link 
-                        href={`/marketplace?forward=${forward.id}`}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-center block"
-                      >
-                        View in Marketplace
-                      </Link>
-                    </div>
-                  )}
-                </div>
+          <div className="space-y-4">
+            {filteredForwards.map((position, index) => (
+              <div
+                key={position.forwardId}
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <PositionCard
+                  position={position}
+                  onListForSale={() => handleListForSale(position.forwardId)}
+                  onDecryptStake={() => handleDecryptStake(position.forwardId)}
+                />
               </div>
             ))}
           </div>
         )}
 
+        {/* Quick Actions */}
+        {isConnected && userForwards.length > 0 && (
+          <div className="mt-8">
+            <div className="card">
+              <div className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/matches"
+                    className="btn-outline btn-md touch-manipulation"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>⚽</span>
+                      <span>Lock More</span>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/marketplace"
+                    className="btn-outline btn-md touch-manipulation"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>🏪</span>
+                      <span>Browse Market</span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Info Section */}
-        <div className="mt-12 bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-          <h3 className="text-2xl font-semibold text-white mb-4">Managing Your Positions</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-4xl mb-2">🔓</div>
-              <h4 className="text-lg font-semibold text-white mb-2">Decrypt Stakes</h4>
-              <p className="text-blue-200 text-sm">
-                Only you can decrypt your stake amounts using your wallet signature
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">💰</div>
-              <h4 className="text-lg font-semibold text-white mb-2">List for Sale</h4>
-              <p className="text-blue-200 text-sm">
-                List your forwards on the marketplace to trade with other users
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">📈</div>
-              <h4 className="text-lg font-semibold text-white mb-2">Track Performance</h4>
-              <p className="text-blue-200 text-sm">
-                Monitor how your locked odds compare to current market odds
-              </p>
+        <div className="mt-6 mb-8">
+          <div className="card">
+            <div className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Managing Your Positions</h3>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600">🔓</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Decrypt Stakes</div>
+                    <div className="text-sm text-gray-600">Only you can decrypt your stake amounts using your wallet signature</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-emerald-600">💰</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">List for Sale</div>
+                    <div className="text-sm text-gray-600">List your forwards on the marketplace to trade with other users</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-purple-600">📈</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Track Performance</div>
+                    <div className="text-sm text-gray-600">Monitor how your locked odds compare to current market odds</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

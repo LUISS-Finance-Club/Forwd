@@ -1,26 +1,56 @@
-import { useState } from "react";
-import { formatPrice, formatOdds, shortenAddress, getMatchDisplayName } from "../lib/marketplace";
-import { type Forward } from "../lib/marketplace";
+"use client";
+import { useState, useEffect } from "react";
+import { useAccount } from "wagmi";
+import { formatPrice, formatOdds, shortenAddress, getMatchDisplayName, type Forward } from "../lib/marketplace";
+import { decryptStake, isMockEncryptedRef, formatStakeAmount, DecryptionResult } from "../lib/iexec";
 
 interface ForwardCardProps {
   forward: Forward;
   onBuy: () => void;
   disabled?: boolean;
   isBuying?: boolean;
-  currentUser?: string;
 }
 
 export default function ForwardCard({ 
   forward, 
   onBuy, 
   disabled = false, 
-  isBuying = false,
-  currentUser 
+  isBuying = false
 }: ForwardCardProps) {
+  const { address } = useAccount();
   const [showDetails, setShowDetails] = useState(false);
+  const [decryptedStake, setDecryptedStake] = useState<string | null>(null);
+  const [isDecrypting, setIsDecrypting] = useState(false);
+  const [decryptionError, setDecryptionError] = useState<string | null>(null);
 
-  const isOwner = currentUser && forward.owner.toLowerCase() === currentUser.toLowerCase();
-  const canBuy = forward.forSale && !isOwner && !disabled;
+  const isOwner = address?.toLowerCase() === forward.owner.toLowerCase();
+  const canBuy = forward.forSale && !isOwner && !disabled && !isBuying;
+
+  useEffect(() => {
+    if (isOwner && isMockEncryptedRef(forward.encryptedStakeRef)) {
+      const fetchDecryptedStake = async () => {
+        setIsDecrypting(true);
+        setDecryptionError(null);
+        try {
+          const result: DecryptionResult = await decryptStake(forward.encryptedStakeRef);
+          if (result.success && result.data) {
+            setDecryptedStake(formatStakeAmount(result.data.stakeAmount));
+          } else {
+            setDecryptionError(result.error || "Failed to decrypt stake.");
+          }
+        } catch (error) {
+          console.error("Error decrypting stake:", error);
+          setDecryptionError("Error decrypting stake.");
+        } finally {
+          setIsDecrypting(false);
+        }
+      };
+      fetchDecryptedStake();
+    } else {
+      setDecryptedStake(null);
+      setDecryptionError(null);
+    }
+  }, [isOwner, forward.encryptedStakeRef]);
 
   const handleBuyClick = () => {
     if (canBuy) {
@@ -29,152 +59,189 @@ export default function ForwardCard({
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 group">
-      {/* Header */}
-      <div className="mb-4">
+    <div className="card-interactive animate-slide-up">
+      <div className="p-4">
+        {/* Header */}
         <div className="flex items-start justify-between mb-3">
-          <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-blue-100 transition-colors leading-tight">
-            {getMatchDisplayName(forward.matchId)}
-          </h3>
-          {isOwner && (
-            <span className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full whitespace-nowrap ml-2">
-              Your Forward
-            </span>
-          )}
-        </div>
-        
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 text-sm">
-          <div className="bg-white/5 rounded-lg p-2 sm:p-3">
-            <p className="text-blue-200 text-xs mb-1">Odds</p>
-            <p className="text-white font-semibold text-base sm:text-lg">{formatOdds(forward.odds)}x</p>
-          </div>
-          <div className="bg-white/5 rounded-lg p-2 sm:p-3">
-            <p className="text-blue-200 text-xs mb-1">Price</p>
-            <p className="text-white font-semibold text-base sm:text-lg">{formatPrice(forward.price)}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Seller Info */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-blue-200">Seller</span>
-          <span className="text-white font-mono">{shortenAddress(forward.owner)}</span>
-        </div>
-      </div>
-
-      {/* Stake Information */}
-      <div className="bg-white/5 rounded-lg p-4 mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-blue-200 text-sm">Stake Amount</p>
-          <div className="flex items-center gap-2">
-            <span className="text-blue-200 text-sm">🔒</span>
-            <span className="text-blue-200 text-sm">Encrypted</span>
-          </div>
-        </div>
-        <p className="text-blue-200 text-xs">
-          {isOwner 
-            ? "You can decrypt this stake in your positions" 
-            : "Only the seller can decrypt their stake amount"
-          }
-        </p>
-      </div>
-
-      {/* Details Toggle */}
-      <div className="mb-4">
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="text-blue-300 hover:text-blue-100 text-sm flex items-center gap-1 transition-colors"
-        >
-          <span>{showDetails ? "Hide" : "Show"} Details</span>
-          <span className={`transform transition-transform ${showDetails ? 'rotate-180' : ''}`}>
-            ▼
-          </span>
-        </button>
-        
-        {showDetails && (
-          <div className="mt-3 bg-white/5 rounded-lg p-3 text-xs">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-blue-200">Forward ID:</span>
-                <span className="text-white font-mono">#{forward.forwardId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-blue-200">Match ID:</span>
-                <span className="text-white font-mono">{forward.matchId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-blue-200">Encrypted Ref:</span>
-                <span className="text-white font-mono text-xs break-all">
-                  {forward.encryptedStakeRef.slice(0, 20)}...
+          <div className="flex-1">
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {getMatchDisplayName(forward.matchId)}
+            </h3>
+            <div className="flex items-center space-x-2">
+              <span className="badge badge-primary">
+                Forward #{forward.forwardId}
+              </span>
+              {isOwner && (
+                <span className="badge badge-success">
+                  Your Forward
                 </span>
+              )}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-gray-500">
+              {new Date(forward.createdAt).toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+
+        {/* Odds and Price Display */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 mb-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-xs text-gray-600 mb-1">Odds</div>
+              <div className="text-xl font-bold text-blue-600">
+                {formatOdds(forward.odds)}x
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-600 mb-1">Price</div>
+              <div className="text-xl font-bold text-purple-600">
+                {formatPrice(forward.price)}
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Action Button */}
-      <div className="space-y-2">
-        {isOwner ? (
-          <div className="w-full bg-blue-600/20 border border-blue-500/50 rounded-lg p-3 text-center">
-            <p className="text-blue-200 text-sm">This is your forward</p>
-            <p className="text-blue-300 text-xs mt-1">
-              View in <a href="/positions" className="underline hover:text-blue-100">Positions</a>
-            </p>
+        {/* Seller Info */}
+        <div className="bg-gray-50 rounded-lg p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Seller</span>
+            <span className="text-sm font-mono text-gray-900">
+              {shortenAddress(forward.owner)}
+            </span>
           </div>
-        ) : !forward.forSale ? (
-          <div className="w-full bg-gray-600/20 border border-gray-500/50 rounded-lg p-3 text-center">
-            <p className="text-gray-300 text-sm">Not for Sale</p>
-          </div>
-        ) : (
-          <button
-            onClick={handleBuyClick}
-            disabled={disabled || isBuying}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
-          >
-            {isBuying ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Processing...</span>
-              </>
+        </div>
+
+        {/* Stake Information */}
+        <div className="bg-gray-50 rounded-lg p-3 mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Stake Amount</span>
+            {isOwner ? (
+              isDecrypting ? (
+                <div className="flex items-center space-x-2">
+                  <div className="spinner w-4 h-4"></div>
+                  <span className="text-xs text-gray-500">Decrypting...</span>
+                </div>
+              ) : decryptedStake ? (
+                <span className="text-sm font-semibold text-emerald-600">
+                  {decryptedStake}
+                </span>
+              ) : decryptionError ? (
+                <span className="text-xs text-red-600">Error</span>
+              ) : (
+                <span className="text-sm text-gray-500">🔒 Encrypted</span>
+              )
             ) : (
-              <>
-                <span className="text-base sm:text-lg">💰</span>
-                <span className="truncate">Buy for {formatPrice(forward.price)}</span>
-              </>
+              <span className="text-sm text-gray-500">🔒 Encrypted</span>
             )}
-          </button>
-        )}
-        
-        {/* Additional Info */}
-        <div className="text-center">
-          <p className="text-blue-200 text-xs">
-            {isOwner 
-              ? "You own this forward position" 
-              : forward.forSale 
-                ? "Click to purchase this forward" 
-                : "This forward is not available for purchase"
-            }
-          </p>
-        </div>
-      </div>
-
-      {/* Status Indicators */}
-      <div className="mt-4 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${forward.forSale ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-          <span className="text-blue-200">
-            {forward.forSale ? 'Available' : 'Not for Sale'}
-          </span>
-        </div>
-        
-        {isBuying && (
-          <div className="flex items-center gap-1 text-yellow-300">
-            <div className="animate-pulse w-2 h-2 bg-yellow-300 rounded-full"></div>
-            <span>Processing</span>
           </div>
-        )}
+          
+          <div className="text-xs text-gray-500">
+            {isOwner
+              ? "Your stake is decrypted"
+              : "Only the owner can decrypt their stake amount"}
+          </div>
+          
+          {decryptionError && (
+            <div className="text-xs text-red-600 bg-red-50 rounded p-2 mt-2">
+              {decryptionError}
+            </div>
+          )}
+        </div>
+
+        {/* Details Toggle */}
+        <div className="mb-4">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="btn-ghost btn-sm text-xs w-full"
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <span>{showDetails ? "Hide" : "Show"} Details</span>
+              <span className={`transform transition-transform ${showDetails ? 'rotate-180' : ''}`}>
+                ▼
+              </span>
+            </div>
+          </button>
+          
+          {showDetails && (
+            <div className="mt-3 bg-gray-50 rounded-lg p-3 text-xs animate-slide-up">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Forward ID:</span>
+                  <span className="font-mono text-gray-900">#{forward.forwardId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Match ID:</span>
+                  <span className="font-mono text-gray-900">{forward.matchId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Encrypted Ref:</span>
+                  <span className="font-mono text-gray-900 text-xs break-all">
+                    {forward.encryptedStakeRef.slice(0, 20)}...
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Created:</span>
+                  <span className="text-gray-900">
+                    {new Date(forward.createdAt).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Button */}
+        <div className="space-y-2">
+          {isOwner ? (
+            <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 text-center">
+              <div className="text-sm font-medium text-blue-800">You own this forward</div>
+              <div className="text-xs text-blue-600 mt-1">
+                View in <a href="/positions" className="underline hover:text-blue-800">Positions</a>
+              </div>
+            </div>
+          ) : !forward.forSale ? (
+            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-center">
+              <div className="text-sm text-gray-600">Not for Sale</div>
+            </div>
+          ) : (
+            <button
+              onClick={handleBuyClick}
+              disabled={disabled || isBuying}
+              className="btn-secondary btn-md w-full touch-manipulation"
+            >
+              {isBuying ? (
+                <div className="flex items-center space-x-2">
+                  <div className="spinner w-4 h-4"></div>
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <span>💰</span>
+                  <span>Buy for {formatPrice(forward.price)}</span>
+                </div>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Status Indicators */}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${forward.forSale ? 'bg-emerald-400' : 'bg-gray-400'}`}></div>
+              <span>{forward.forSale ? 'Available' : 'Not for Sale'}</span>
+            </div>
+            
+            {isBuying && (
+              <div className="flex items-center space-x-1 text-amber-600">
+                <div className="animate-pulse w-2 h-2 bg-amber-600 rounded-full"></div>
+                <span>Processing</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

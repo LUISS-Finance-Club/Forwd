@@ -16,6 +16,7 @@ export interface Forward {
   encryptedStakeRef: string;
   forSale: boolean;
   price: number;
+  createdAt: number;
 }
 
 export interface MarketplaceFilters {
@@ -44,6 +45,7 @@ export async function getMarketForwards(): Promise<Forward[]> {
       encryptedStakeRef: "mock-encrypted-ref-1.5-1734567890123-match-1",
       forSale: true,
       price: 0.15,
+      createdAt: Date.now() - 3600000 * 2, // 2 hours ago
     },
     {
       forwardId: 2,
@@ -53,6 +55,7 @@ export async function getMarketForwards(): Promise<Forward[]> {
       encryptedStakeRef: "mock-encrypted-ref-2.1-1734567890124-match-2",
       forSale: true,
       price: 0.25,
+      createdAt: Date.now() - 3600000 * 3, // 3 hours ago
     },
     {
       forwardId: 3,
@@ -62,6 +65,7 @@ export async function getMarketForwards(): Promise<Forward[]> {
       encryptedStakeRef: "mock-encrypted-ref-0.8-1734567890125-match-1",
       forSale: true,
       price: 0.12,
+      createdAt: Date.now() - 3600000 * 1, // 1 hour ago
     },
     {
       forwardId: 4,
@@ -71,6 +75,7 @@ export async function getMarketForwards(): Promise<Forward[]> {
       encryptedStakeRef: "mock-encrypted-ref-3.2-1734567890126-match-3",
       forSale: true,
       price: 0.35,
+      createdAt: Date.now() - 3600000 * 4, // 4 hours ago
     },
     {
       forwardId: 5,
@@ -80,6 +85,7 @@ export async function getMarketForwards(): Promise<Forward[]> {
       encryptedStakeRef: "mock-encrypted-ref-1.8-1734567890127-match-2",
       forSale: true,
       price: 0.18,
+      createdAt: Date.now() - 3600000 * 0.5, // 30 minutes ago
     },
   ];
 
