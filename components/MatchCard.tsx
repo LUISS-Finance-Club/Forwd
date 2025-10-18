@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface Match {

@@ -4,7 +4,7 @@ import { useAccount } from "wagmi";
 import { formatPrice, formatOdds, shortenAddress, getMatchDisplayName, type Forward } from "../lib/marketplace";
 import { decryptStake, isMockEncryptedRef, formatStakeAmount, DecryptionResult } from "../lib/iexec";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface ForwardCardProps {
