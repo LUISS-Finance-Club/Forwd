@@ -1,134 +1,244 @@
 "use client";
+import { useState, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
+import MatchCard from "../../components/MatchCard";
+import MobileNav from "../../components/MobileNav";
 
-// Mock data for demonstration
-const mockMatches = [
-  {
-    id: "match-1",
-    homeTeam: "Manchester United",
-    awayTeam: "Liverpool",
-    date: "2024-01-15",
-    time: "15:00",
-    currentOdds: 2.1,
-  },
-  {
-    id: "match-2", 
-    homeTeam: "Barcelona",
-    awayTeam: "Real Madrid",
-    date: "2024-01-20",
-    time: "20:00",
-    currentOdds: 1.8,
-  },
-  {
-    id: "match-3",
-    homeTeam: "Bayern Munich",
-    awayTeam: "Borussia Dortmund",
-    date: "2024-01-25",
-    time: "18:30",
-    currentOdds: 2.5,
-  },
-];
+interface Match {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeLogo?: string;
+  awayLogo?: string;
+  date: string;
+  time: string;
+  odds: number;
+  status: "upcoming" | "live" | "finished";
+}
 
-export default function Matches() {
-  const { isConnected } = useAccount();
+export default function MatchesPage() {
+  const { isConnected, address } = useAccount();
+  const [selectedFilter, setSelectedFilter] = useState<"all" | "upcoming" | "live">("all");
+
+  // Enhanced mock data with more realistic match information
+  const mockMatches: Match[] = useMemo(() => [
+    {
+      id: "match-1",
+      homeTeam: "Manchester United",
+      awayTeam: "Liverpool",
+      homeLogo: "/api/placeholder/32/32",
+      awayLogo: "/api/placeholder/32/32",
+      date: "Today",
+      time: "15:30",
+      odds: 210,
+      status: "upcoming"
+    },
+    {
+      id: "match-2",
+      homeTeam: "Barcelona",
+      awayTeam: "Real Madrid",
+      homeLogo: "/api/placeholder/32/32",
+      awayLogo: "/api/placeholder/32/32",
+      date: "Tomorrow",
+      time: "20:00",
+      odds: 180,
+      status: "upcoming"
+    },
+    {
+      id: "match-3",
+      homeTeam: "Arsenal",
+      awayTeam: "Chelsea",
+      homeLogo: "/api/placeholder/32/32",
+      awayLogo: "/api/placeholder/32/32",
+      date: "Dec 20",
+      time: "17:30",
+      odds: 195,
+      status: "upcoming"
+    },
+    {
+      id: "match-4",
+      homeTeam: "Bayern Munich",
+      awayTeam: "Borussia Dortmund",
+      homeLogo: "/api/placeholder/32/32",
+      awayLogo: "/api/placeholder/32/32",
+      date: "Dec 22",
+      time: "18:30",
+      odds: 165,
+      status: "upcoming"
+    },
+    {
+      id: "match-5",
+      homeTeam: "PSG",
+      awayTeam: "Marseille",
+      homeLogo: "/api/placeholder/32/32",
+      awayLogo: "/api/placeholder/32/32",
+      date: "Dec 25",
+      time: "21:00",
+      odds: 250,
+      status: "upcoming"
+    }
+  ], []);
+
+  const filteredMatches = useMemo(() => {
+    if (selectedFilter === "all") return mockMatches;
+    return mockMatches.filter(match => match.status === selectedFilter);
+  }, [mockMatches, selectedFilter]);
+
+  const handleLockForward = async (matchId: string) => {
+    // Navigate to lock page
+    window.location.href = `/lock/${matchId}`;
+  };
+
+  const filterButtons = [
+    { key: "all" as const, label: "All Matches", count: mockMatches.length },
+    { key: "upcoming" as const, label: "Upcoming", count: mockMatches.filter(m => m.status === "upcoming").length },
+    { key: "live" as const, label: "Live", count: mockMatches.filter(m => m.status === "live").length }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <Link href="/" className="text-blue-200 hover:text-white transition-colors">
-              ← Back to Home
-            </Link>
-            <h1 className="text-4xl font-bold text-white mt-2">Available Matches</h1>
-            <p className="text-blue-200">Lock your odds early and trade positions</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {isConnected ? (
-              <div className="text-white">
-                <p className="text-sm text-blue-200">Wallet Connected</p>
-              </div>
-            ) : (
-              <ConnectWallet />
-            )}
-          </div>
-        </header>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <MobileNav isConnected={isConnected} address={address} />
+      
+      <main className="mobile-container pt-4">
+        {/* Page Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Available Matches</h1>
+          <p className="text-gray-600">Lock your odds before the match starts</p>
+        </div>
 
-        {/* Matches Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockMatches.map((match) => (
-            <div key={match.id} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
-              <div className="text-center mb-4">
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {match.homeTeam} vs {match.awayTeam}
-                </h3>
-                <p className="text-blue-200 text-sm">
-                  {match.date} at {match.time}
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="bg-white/5 rounded-lg p-4">
-                  <p className="text-blue-200 text-sm mb-1">Current Odds</p>
-                  <p className="text-2xl font-bold text-white">{match.currentOdds}x</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      if (isConnected) {
-                        window.location.href = `/lock/${match.id}`;
-                      }
-                    }}
-                    disabled={!isConnected}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-                  >
-                    {isConnected ? "Lock Forward" : "Connect Wallet to Lock"}
-                  </button>
-                  
-                  <Link 
-                    href={`/marketplace?match=${match.id}`}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-                  >
-                    View Marketplace
-                  </Link>
-                </div>
-              </div>
-            </div>
+        {/* Filter Buttons */}
+        <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
+          {filterButtons.map((filter) => (
+            <button
+              key={filter.key}
+              onClick={() => setSelectedFilter(filter.key)}
+              className={`btn-sm whitespace-nowrap ${
+                selectedFilter === filter.key
+                  ? "btn-primary"
+                  : "btn-outline"
+              }`}
+            >
+              {filter.label}
+              <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
+                {filter.count}
+              </span>
+            </button>
           ))}
         </div>
 
-        {/* Info Section */}
-        <div className="mt-12 bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-          <h3 className="text-2xl font-semibold text-white mb-4">How Forward Locking Works</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-4xl mb-2">🔒</div>
-              <h4 className="text-lg font-semibold text-white mb-2">1. Lock Odds</h4>
-              <p className="text-blue-200 text-sm">
-                Lock current odds with an encrypted stake amount using iExec DataProtector
+        {/* Wallet Connection Prompt */}
+        {!isConnected && (
+          <div className="card mb-6 animate-bounce-in">
+            <div className="p-4 text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl">🔗</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Connect Your Wallet</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Connect your wallet to lock forwards and start trading
+              </p>
+              <ConnectWallet />
+            </div>
+          </div>
+        )}
+
+        {/* Matches List */}
+        <div className="space-y-4">
+          {filteredMatches.length === 0 ? (
+            <div className="card text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">⚽</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">No Matches Found</h3>
+              <p className="text-sm text-gray-600">
+                No matches match your current filter. Try selecting a different filter.
               </p>
             </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">📈</div>
-              <h4 className="text-lg font-semibold text-white mb-2">2. Trade Positions</h4>
-              <p className="text-blue-200 text-sm">
-                Buy and sell forward positions as odds change in the marketplace
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">💰</div>
-              <h4 className="text-lg font-semibold text-white mb-2">3. Profit from Movement</h4>
-              <p className="text-blue-200 text-sm">
-                Profit from odds movement rather than game outcomes
-              </p>
+          ) : (
+            filteredMatches.map((match, index) => (
+              <div
+                key={match.id}
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <MatchCard
+                  match={match}
+                  onLockForward={() => handleLockForward(match.id)}
+                />
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-8">
+          <div className="card">
+            <div className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href="/marketplace"
+                  className="btn-outline btn-md touch-manipulation"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span>🏪</span>
+                    <span>Browse Marketplace</span>
+                  </div>
+                </Link>
+                <Link
+                  href="/positions"
+                  className="btn-outline btn-md touch-manipulation"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span>📈</span>
+                    <span>My Positions</span>
+                  </div>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Info Section */}
+        <div className="mt-6 mb-8">
+          <div className="card">
+            <div className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3">How It Works</h3>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-blue-600">1</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Choose a Match</div>
+                    <div className="text-sm text-gray-600">Select from upcoming matches</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-blue-600">2</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Lock Your Odds</div>
+                    <div className="text-sm text-gray-600">Secure your stake with encrypted data</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-blue-600">3</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Trade or Hold</div>
+                    <div className="text-sm text-gray-600">Sell your position or wait for the match</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

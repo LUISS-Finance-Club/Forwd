@@ -8,6 +8,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: minikitConfig.miniapp.name,
     description: minikitConfig.miniapp.description,
+    viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+    themeColor: "#3B82F6",
+    manifest: "/manifest.json",
     other: {
       "fc:frame": JSON.stringify({
         version: minikitConfig.miniapp.version,
@@ -32,7 +35,7 @@ export default function RootLayout({
   return (
     <RootProvider>
       <html lang="en">
-        <body className="font-sans">
+        <body className="font-sans bg-gray-50">
           <SafeArea>{children}</SafeArea>
         </body>
       </html>
