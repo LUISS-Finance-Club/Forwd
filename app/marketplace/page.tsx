@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { ConnectWalletButton } from "@coinbase/onchainkit";
+import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
 
 interface Forward {
@@ -144,7 +144,7 @@ export default function Marketplace() {
                 <p className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
               </div>
             ) : (
-              <ConnectWalletButton />
+              <ConnectWallet />
             )}
           </div>
         </header>

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { ConnectWalletButton } from "@coinbase/onchainkit";
+import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
 import { DataProtector } from "@iexec/dataprotector";
 
@@ -143,7 +143,7 @@ export default function LockPage({ params }: { params: { id: string } }) {
                 <p className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
               </div>
             ) : (
-              <ConnectWalletButton />
+              <ConnectWallet />
             )}
           </div>
         </header>

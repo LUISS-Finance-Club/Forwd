@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAccount, useReadContract } from "wagmi";
-import { ConnectWalletButton } from "@coinbase/onchainkit";
+import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
 import { DataProtector } from "@iexec/dataprotector";
 
@@ -101,7 +101,7 @@ export default function Positions() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Connect Your Wallet</h1>
           <p className="text-blue-200 mb-6">Connect your wallet to view your forward positions</p>
-          <ConnectWalletButton />
+          <ConnectWallet />
         </div>
       </div>
     );

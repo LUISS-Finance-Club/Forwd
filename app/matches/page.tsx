@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useAccount } from "wagmi";
-import { ConnectWalletButton } from "@coinbase/onchainkit";
+import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
 
 // Mock data for demonstration
@@ -53,7 +53,7 @@ export default function Matches() {
                 <p className="text-sm text-blue-200">Wallet Connected</p>
               </div>
             ) : (
-              <ConnectWalletButton />
+              <ConnectWallet />
             )}
           </div>
         </header>

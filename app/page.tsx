@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAccount, useConnect } from "wagmi";
-import { ConnectWalletButton } from "@coinbase/onchainkit";
+import { useAccount } from "wagmi";
+import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import Link from "next/link";
 
@@ -32,7 +32,7 @@ export default function Home() {
                 <p className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
               </div>
             ) : (
-              <ConnectWalletButton />
+                  <ConnectWallet />
             )}
           </div>
         </header>

@@ -1,5 +1,5 @@
-import hre from "hardhat";
-import fs from 'fs';
+const hre = require("hardhat");
+const fs = require('fs');
 
 async function main() {
   console.log("Deploying BettingForwards contract...");
@@ -22,29 +22,10 @@ async function main() {
     './lib/abi/BettingForwards.json',
     JSON.stringify(contractInfo, null, 2)
   );
-
-  console.log("Contract info saved to ./lib/abi/BettingForwards.json");
-  
-  // Verify contract on BaseScan (optional)
-  if (hre.network.name === "baseSepolia" || hre.network.name === "base") {
-    console.log("Waiting for contract to be mined...");
-    await bettingForwards.deploymentTransaction()?.wait(6);
-    
-    try {
-      await hre.run("verify:verify", {
-        address: address,
-        constructorArguments: [],
-      });
-      console.log("Contract verified on BaseScan!");
-    } catch (error) {
-      console.log("Verification failed:", error.message);
-    }
-  }
+  console.log("Contract address and ABI saved to ./lib/abi/BettingForwards.json");
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
