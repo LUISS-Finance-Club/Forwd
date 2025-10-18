@@ -1,119 +1,99 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useQuickAuth,useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useRouter } from "next/navigation";
-import { minikitConfig } from "../minikit.config";
-import styles from "./page.module.css";
-
-interface AuthResponse {
-  success: boolean;
-  user?: {
-    fid: number; // FID is the unique identifier for the user
-    issuedAt?: number;
-    expiresAt?: number;
-  };
-  message?: string; // Error messages come as 'message' not 'error'
-}
-
+import { useAccount, useConnect } from "wagmi";
+import { ConnectWalletButton } from "@coinbase/onchainkit";
+import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import Link from "next/link";
 
 export default function Home() {
+  const { address, isConnected } = useAccount();
   const { isFrameReady, setFrameReady, context } = useMiniKit();
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
 
-  // Initialize the  miniapp
+  // Initialize the miniapp
   useEffect(() => {
     if (!isFrameReady) {
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
- 
-  
-
-  // If you need to verify the user's identity, you can use the useQuickAuth hook.
-  // This hook will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `context.user.fid`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
-
-  const { data: authData, isLoading: isAuthLoading, error: authError } = useQuickAuth<AuthResponse>(
-    "/api/auth",
-    { method: "GET" }
-  );
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // Check authentication first
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...");
-      return;
-    }
-
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist");
-      return;
-    }
-
-    if (!email) {
-      setError("Please enter your email address");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    // TODO: Save email to database/API with user FID
-    console.log("Valid email submitted:", email);
-    console.log("User authenticated:", authData.user);
-    
-    // Navigate to success page
-    router.push("/success");
-  };
 
   return (
-    <div className={styles.container}>
-      <button className={styles.closeButton} type="button">
-        ✕
-      </button>
-      
-      <div className={styles.content}>
-        <div className={styles.waitlistForm}>
-          <h1 className={styles.title}>Welcome to {minikitConfig.miniapp.name}</h1>
-          
-          <p className={styles.subtitle}>
-             Hey {context?.user?.displayName || "there"}, Get early access to the future of<br />
-            sports finance and DeFi betting on Base.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-white">PreStake</h1>
+            <p className="text-blue-200">Sports Finance Platform</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {isConnected ? (
+              <div className="text-white">
+                <p className="text-sm text-blue-200">Connected as:</p>
+                <p className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</p>
+              </div>
+            ) : (
+              <ConnectWalletButton />
+            )}
+          </div>
+        </header>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="email"
-              placeholder="Your amazing email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.emailInput}
-            />
-            
-            {error && <p className={styles.error}>{error}</p>}
-            
-            <button type="submit" className={styles.joinButton}>
-              JOIN PRESTAKE
-            </button>
-          </form>
-        </div>
+        {/* Main Content */}
+        <main className="text-center">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-6xl font-bold text-white mb-6">
+              Trade Sports Odds Like Markets
+            </h2>
+            <p className="text-xl text-blue-200 mb-12 max-w-2xl mx-auto">
+              Lock odds early, trade positions, and profit from odds movement rather than game outcomes. 
+              The future of ethical DeFi betting on Base.
+            </p>
+
+            {/* Navigation Cards */}
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
+              <Link href="/matches" className="group">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 hover:bg-white/20 transition-all duration-300 border border-white/20">
+                  <div className="text-4xl mb-4">⚽</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Available Matches</h3>
+                  <p className="text-blue-200">Browse upcoming matches and lock your odds</p>
+                </div>
+              </Link>
+
+              <Link href="/positions" className="group">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 hover:bg-white/20 transition-all duration-300 border border-white/20">
+                  <div className="text-4xl mb-4">📊</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">My Positions</h3>
+                  <p className="text-blue-200">View and manage your forward positions</p>
+                </div>
+              </Link>
+
+              <Link href="/marketplace" className="group">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 hover:bg-white/20 transition-all duration-300 border border-white/20">
+                  <div className="text-4xl mb-4">🏪</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Marketplace</h3>
+                  <p className="text-blue-200">Buy and sell forward positions</p>
+                </div>
+              </Link>
+            </div>
+
+            {/* Features */}
+            <div className="grid md:grid-cols-2 gap-8 text-left">
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <h3 className="text-2xl font-semibold text-white mb-4">🔒 Privacy First</h3>
+                <p className="text-blue-200">
+                  Your stake amounts are encrypted using iExec DataProtector, ensuring privacy 
+                  while maintaining transparency in odds and ownership.
+                </p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <h3 className="text-2xl font-semibold text-white mb-4">⚡ Base Powered</h3>
+                <p className="text-blue-200">
+                  Built on Base for fast, cheap transactions. Connect with Coinbase Wallet 
+                  or any Ethereum-compatible wallet.
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
