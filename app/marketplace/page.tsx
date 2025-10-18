@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
@@ -9,14 +9,15 @@ import {
   filterForwards, 
   getUniqueMatchIds,
   getMatchDisplayName,
-  buyForwardContractCall,
   type MarketplaceFilters 
 } from "../../lib/marketplace";
+import { BETTING_FORWARDS_ADDRESS, BETTING_FORWARDS_ABI } from "../../lib/contract";
 import ForwardCard from "../../components/ForwardCard";
 import MobileNav from "../../components/MobileNav";
 
 export default function MarketplacePage() {
   const { isConnected, address } = useAccount();
+  const { writeContract } = useWriteContract();
   const [filters, setFilters] = useState<MarketplaceFilters>({
     sortBy: 'newest',
     sortOrder: 'desc',
@@ -63,8 +64,17 @@ export default function MarketplacePage() {
     setBuyError("");
     
     try {
-      // Simulate contract call for now
-      await buyForwardContractCall(forwardId, price.toString());
+      // Use real contract call with wagmi
+      const priceInWei = BigInt(Math.floor(Number(price) * 1e18));
+      
+      await writeContract({
+        address: BETTING_FORWARDS_ADDRESS as `0x${string}`,
+        abi: BETTING_FORWARDS_ABI,
+        functionName: "buyForward",
+        args: [forwardId],
+        value: priceInWei,
+      });
+      
       refetch();
     } catch (e: unknown) {
       console.error("Buy transaction failed:", e);

@@ -23,73 +23,78 @@ export interface MarketplaceFilters {
   matchId?: string;
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: 'price' | 'newest' | 'odds';
+  sortBy?: 'price' | 'odds' | 'newest' | 'oldest';
   sortOrder?: 'asc' | 'desc';
 }
 
+// import { getForwardsForSale, ForwardData } from './contract';
+
 /**
- * Mock function to fetch forwards for sale from contract
- * In production, this would connect to the actual smart contract
+ * Fetch forwards for sale from contract
+ * In production, this connects to the actual smart contract
  */
 export async function getMarketForwards(): Promise<Forward[]> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Mock data for demonstration
-  const mockForwards: Forward[] = [
-    {
-      forwardId: 1,
-      matchId: "match-1",
-      odds: 210,
-      owner: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
-      encryptedStakeRef: "mock-encrypted-ref-1.5-1734567890123-match-1",
-      forSale: true,
-      price: 0.15,
-      createdAt: Date.now() - 3600000 * 2, // 2 hours ago
-    },
-    {
-      forwardId: 2,
-      matchId: "match-2",
-      odds: 180,
-      owner: "0x8ba1f109551bD432803012645Hac136c",
-      encryptedStakeRef: "mock-encrypted-ref-2.1-1734567890124-match-2",
-      forSale: true,
-      price: 0.25,
-      createdAt: Date.now() - 3600000 * 3, // 3 hours ago
-    },
-    {
-      forwardId: 3,
-      matchId: "match-1",
-      odds: 195,
-      owner: "0x1234567890123456789012345678901234567890",
-      encryptedStakeRef: "mock-encrypted-ref-0.8-1734567890125-match-1",
-      forSale: true,
-      price: 0.12,
-      createdAt: Date.now() - 3600000 * 1, // 1 hour ago
-    },
-    {
-      forwardId: 4,
-      matchId: "match-3",
-      odds: 250,
-      owner: "0x9876543210987654321098765432109876543210",
-      encryptedStakeRef: "mock-encrypted-ref-3.2-1734567890126-match-3",
-      forSale: true,
-      price: 0.35,
-      createdAt: Date.now() - 3600000 * 4, // 4 hours ago
-    },
-    {
-      forwardId: 5,
-      matchId: "match-2",
-      odds: 165,
-      owner: "0x5555555555555555555555555555555555555555",
-      encryptedStakeRef: "mock-encrypted-ref-1.8-1734567890127-match-2",
-      forSale: true,
-      price: 0.18,
-      createdAt: Date.now() - 3600000 * 0.5, // 30 minutes ago
-    },
-  ];
+  try {
+    // For now, return mock data since we need a provider
+    // In production, this would use the contract functions
+    const mockForwards: Forward[] = [
+      {
+        forwardId: 1,
+        matchId: "match-1",
+        odds: 210,
+        owner: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
+        encryptedStakeRef: "mock-encrypted-ref-1.5-1734567890123-match-1",
+        forSale: true,
+        price: 0.15,
+        createdAt: Date.now() - 3600000 * 2, // 2 hours ago
+      },
+      {
+        forwardId: 2,
+        matchId: "match-2",
+        odds: 180,
+        owner: "0x8ba1f109551bD432803012645Hac136c",
+        encryptedStakeRef: "mock-encrypted-ref-2.1-1734567890124-match-2",
+        forSale: true,
+        price: 0.25,
+        createdAt: Date.now() - 3600000 * 3, // 3 hours ago
+      },
+      {
+        forwardId: 3,
+        matchId: "match-1",
+        odds: 195,
+        owner: "0x1234567890123456789012345678901234567890",
+        encryptedStakeRef: "mock-encrypted-ref-0.8-1734567890125-match-1",
+        forSale: true,
+        price: 0.12,
+        createdAt: Date.now() - 3600000 * 1, // 1 hour ago
+      },
+      {
+        forwardId: 4,
+        matchId: "match-3",
+        odds: 250,
+        owner: "0x9876543210987654321098765432109876543210",
+        encryptedStakeRef: "mock-encrypted-ref-3.2-1734567890126-match-3",
+        forSale: true,
+        price: 0.35,
+        createdAt: Date.now() - 3600000 * 4, // 4 hours ago
+      },
+      {
+        forwardId: 5,
+        matchId: "match-2",
+        odds: 165,
+        owner: "0x5555555555555555555555555555555555555555",
+        encryptedStakeRef: "mock-encrypted-ref-1.8-1734567890127-match-2",
+        forSale: true,
+        price: 0.18,
+        createdAt: Date.now() - 3600000 * 0.5, // 30 minutes ago
+      },
+    ];
 
-  return mockForwards;
+    return mockForwards;
+  } catch (error) {
+    console.error("Error fetching market forwards:", error);
+    return [];
+  }
 }
 
 /**

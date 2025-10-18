@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "compile": "hardhat compile",
-    "test": "hardhat test",
-    "deploy:sepolia": "hardhat run scripts/deploy.js --network baseSepolia",
-    "deploy:mainnet": "hardhat run scripts/deploy.js --network base"
+    "compile": "hardhat --config hardhat.config.mjs compile",
+    "test": "hardhat --config hardhat.config.mjs test",
+    "deploy:sepolia": "hardhat --config hardhat.config.mjs run scripts/deploy.js --network baseSepolia",
+    "deploy:mainnet": "hardhat --config hardhat.config.mjs run scripts/deploy.js --network base"
   },
   "dependencies": {
     "@coinbase/onchainkit": "latest",
@@ -21,6 +21,7 @@
     "@tailwindcss/postcss": "^4.1.14",
     "@tanstack/react-query": "^5.90.5",
     "autoprefixer": "^10.4.21",
+    "dotenv": "^17.2.3",
     "ethers": "^6.15.0",
     "hardhat": "^3.0.7",
     "next": "15.3.4",
@@ -48,5 +49,6 @@
   },
   "overrides": {
     "use-sync-external-store": "^1.2.0"
-  }
+  },
+  "type": "module"
 }

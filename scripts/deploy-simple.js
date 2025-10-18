@@ -1,28 +1,39 @@
-import hre from "hardhat";
+import { ethers } from "ethers";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from 'url';
+import dotenv from "dotenv";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 async function main() {
   console.log("🚀 Starting BettingForwards contract deployment...");
   
-  // Get the contract factory
-  const BettingForwards = await hre.ethers.getContractFactory("BettingForwards");
+  // Get the contract factory from artifacts
+  const contractArtifact = JSON.parse(fs.readFileSync("./artifacts/contracts/BettingForwards.sol/BettingForwards.json", "utf8"));
+  
+  // Create provider and signer
+  const provider = new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_BASE_RPC || "https://sepolia.base.org");
+  
+  if (!process.env.PRIVATE_KEY) {
+    throw new Error("PRIVATE_KEY not found in environment variables");
+  }
+  
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
   
   console.log("📦 Deploying contract...");
+  console.log("👤 Deployer address:", wallet.address);
   
   // Deploy the contract
-  const contract = await BettingForwards.deploy();
+  const factory = new ethers.ContractFactory(contractArtifact.abi, contractArtifact.bytecode, wallet);
+  const contract = await factory.deploy();
   await contract.waitForDeployment();
   
   const contractAddress = await contract.getAddress();
   
   console.log("✅ Contract deployed successfully!");
   console.log("📍 Contract Address:", contractAddress);
-  console.log("🔗 Network:", await hre.ethers.provider.getNetwork());
+  console.log("🔗 Network:", await provider.getNetwork());
   
   // Verify contract deployment
   console.log("🔍 Verifying deployment...");
@@ -37,11 +48,11 @@ async function main() {
   // Save contract info to file
   const contractInfo = {
     address: contractAddress,
-    network: (await hre.ethers.provider.getNetwork()).name,
-    chainId: (await hre.ethers.provider.getNetwork()).chainId,
+    network: (await provider.getNetwork()).name,
+    chainId: (await provider.getNetwork()).chainId.toString(),
     owner: owner,
     deploymentTime: new Date().toISOString(),
-    abi: BettingForwards.interface.format("json")
+    abi: contractArtifact.abi
   };
   
   // Ensure lib/abi directory exists
@@ -52,7 +63,9 @@ async function main() {
   
   // Save contract info
   const contractPath = path.join(abiDir, 'BettingForwards.json');
-  fs.writeFileSync(contractPath, JSON.stringify(contractInfo, null, 2));
+  fs.writeFileSync(contractPath, JSON.stringify(contractInfo, null, 2, (key, value) => 
+    typeof value === 'bigint' ? value.toString() : value
+  ));
   
   console.log("💾 Contract info saved to:", contractPath);
   

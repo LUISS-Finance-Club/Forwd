@@ -111,8 +111,8 @@ function LockPageContent({ params }: { params: Promise<{ id: string }> }) {
     setError("");
 
     try {
-      // TODO: Replace with actual contract address after deployment
-      const contractAddress = "0x0000000000000000000000000000000000000000";
+      // Use deployed contract address
+      const contractAddress = process.env.NEXT_PUBLIC_BETTING_FORWARDS_CONTRACT_ADDRESS || "0x68C784E3654b9F021D301838aAF49a0E40C7EE8b";
       
       writeContract({
         address: contractAddress as `0x${string}`,

@@ -1,47 +1,50 @@
-import hre from "hardhat";
+import { ethers } from "ethers";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from 'url';
+import dotenv from "dotenv";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 async function main() {
   console.log("🚀 Starting BettingForwards contract deployment...");
   
-  // Get the contract factory
-  const BettingForwards = await hre.ethers.getContractFactory("BettingForwards");
+  // Get the contract factory from artifacts
+  const contractArtifact = JSON.parse(fs.readFileSync("./artifacts/contracts/BettingForwards.sol/BettingForwards.json", "utf8"));
+  
+  // Create provider and signer
+  const provider = new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_BASE_RPC || "https://sepolia.base.org");
+  
+  if (!process.env.PRIVATE_KEY) {
+    throw new Error("PRIVATE_KEY not found in environment variables");
+  }
+  
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
   
   console.log("📦 Deploying contract...");
+  console.log("👤 Deployer address:", wallet.address);
   
   // Deploy the contract
-  const contract = await BettingForwards.deploy();
+  const factory = new ethers.ContractFactory(contractArtifact.abi, contractArtifact.bytecode, wallet);
+  const contract = await factory.deploy();
   await contract.waitForDeployment();
   
   const contractAddress = await contract.getAddress();
   
   console.log("✅ Contract deployed successfully!");
   console.log("📍 Contract Address:", contractAddress);
-  console.log("🔗 Network:", await hre.ethers.provider.getNetwork());
   
-  // Verify contract deployment
-  console.log("🔍 Verifying deployment...");
-  const owner = await contract.owner();
-  const nextForwardId = await contract.nextForwardId();
-  const platformFee = await contract.platformFee();
-  
-  console.log("👤 Owner:", owner);
-  console.log("🆔 Next Forward ID:", nextForwardId.toString());
-  console.log("💰 Platform Fee:", platformFee.toString(), "basis points");
+  const network = await provider.getNetwork();
+  console.log("🔗 Network:", network.name, "Chain ID:", network.chainId.toString());
   
   // Save contract info to file
   const contractInfo = {
     address: contractAddress,
-    network: (await hre.ethers.provider.getNetwork()).name,
-    chainId: (await hre.ethers.provider.getNetwork()).chainId,
-    owner: owner,
+    network: network.name,
+    chainId: network.chainId.toString(),
+    deployer: wallet.address,
     deploymentTime: new Date().toISOString(),
-    abi: BettingForwards.interface.format("json")
+    abi: contractArtifact.abi
   };
   
   // Ensure lib/abi directory exists
@@ -61,6 +64,10 @@ async function main() {
   console.log(`npx hardhat verify --network baseSepolia ${contractAddress}`);
   
   console.log("\n🎉 Deployment completed successfully!");
+  console.log("\n📋 Next steps:");
+  console.log("1. Verify the contract on BaseScan");
+  console.log("2. Update frontend with contract address");
+  console.log("3. Test the application");
 }
 
 main()
