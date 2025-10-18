@@ -141,21 +141,21 @@ export default function MarketplacePage() {
 
         {/* Marketplace Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="card text-center p-3">
-            <div className="text-lg font-bold text-blue-600">{availableForwards.length}</div>
-            <div className="text-xs text-gray-600">For Sale</div>
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 text-white shadow-lg">
+            <div className="text-2xl font-bold mb-1">{availableForwards.length}</div>
+            <div className="text-blue-100 text-xs font-medium">For Sale</div>
           </div>
-          <div className="card text-center p-3">
-            <div className="text-lg font-bold text-emerald-600">
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-4 text-white shadow-lg">
+            <div className="text-2xl font-bold mb-1">
               {totalValue.toFixed(2)} ETH
             </div>
-            <div className="text-xs text-gray-600">Total Value</div>
+            <div className="text-emerald-100 text-xs font-medium">Total Value</div>
           </div>
-          <div className="card text-center p-3">
-            <div className="text-lg font-bold text-purple-600">
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-4 text-white shadow-lg">
+            <div className="text-2xl font-bold mb-1">
               {averageOdds.toFixed(1)}x
             </div>
-            <div className="text-xs text-gray-600">Avg Odds</div>
+            <div className="text-purple-100 text-xs font-medium">Avg Odds</div>
           </div>
         </div>
 

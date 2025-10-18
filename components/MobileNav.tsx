@@ -52,7 +52,7 @@ export default function MobileNav({ isConnected, address }: MobileNavProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
+              <span className="text-white font-bold text-sm">⚽</span>
             </div>
             <h1 className="text-xl font-bold text-gray-900">PreStake</h1>
           </div>
@@ -83,7 +83,7 @@ export default function MobileNav({ isConnected, address }: MobileNavProps) {
                 href={item.href}
                 className={active ? "mobile-nav-item-active" : "mobile-nav-item-inactive"}
               >
-                <span className="text-lg mb-1">
+                <span className="text-2xl mb-1">
                   {active ? item.activeIcon : item.icon}
                 </span>
                 <span>{item.label}</span>
