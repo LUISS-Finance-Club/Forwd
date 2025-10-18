@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function Marketplace() {
   });
 
   // Mock data for demonstration - in real app, fetch from contract
-  const mockForwardsForSale: Forward[] = [
+  const mockForwardsForSale: Forward[] = useMemo(() => [
     {
       id: 3,
       matchId: "match-1",
@@ -58,7 +58,7 @@ export default function Marketplace() {
       price: 2000000000000000000, // 2 ETH in wei
       createdAt: Date.now() - 1800000, // 30 minutes ago
     },
-  ];
+  ], []);
 
   useEffect(() => {
     // Filter out forwards owned by current user
@@ -67,7 +67,7 @@ export default function Marketplace() {
     );
     setForwardsForSale(availableForwards);
     setIsLoading(false);
-  }, [address]);
+  }, [address, mockForwardsForSale]);
 
   const handleBuyForward = async (forwardId: number, price: number) => {
     if (!isConnected) return;
@@ -90,7 +90,7 @@ export default function Marketplace() {
           },
         ],
         functionName: "buyForward",
-        args: [forwardId],
+        args: [BigInt(forwardId)],
         value: BigInt(price),
       });
     } catch (err) {
@@ -106,10 +106,6 @@ export default function Marketplace() {
 
   const formatPrice = (price: number) => {
     return (price / 1e18).toFixed(2);
-  };
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString();
   };
 
   const getMatchName = (matchId: string) => {

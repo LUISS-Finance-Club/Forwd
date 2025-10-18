@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const { isFrameReady, setFrameReady, context } = useMiniKit();
+  const { isFrameReady, setFrameReady } = useMiniKit();
 
   // Initialize the miniapp
   useEffect(() => {

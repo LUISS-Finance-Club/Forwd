@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
-import { DataProtector } from "@iexec/dataprotector";
 
 interface LockFormData {
   matchId: string;
@@ -11,15 +10,19 @@ interface LockFormData {
   stakeAmount: number;
 }
 
-export default function LockPage({ params }: { params: { id: string } }) {
+export default function LockPage({ params }: { params: Promise<{ id: string }> }) {
+  return <LockPageContent params={params} />;
+}
+
+function LockPageContent({ params }: { params: Promise<{ id: string }> }) {
+  const [matchId, setMatchId] = useState<string>("");
   const { isConnected, address } = useAccount();
   const [formData, setFormData] = useState<LockFormData>({
-    matchId: params.id,
+    matchId: "",
     odds: 0,
     stakeAmount: 0,
   });
   const [isEncrypting, setIsEncrypting] = useState(false);
-  const [isLocking, setIsLocking] = useState(false);
   const [encryptedRef, setEncryptedRef] = useState<string>("");
   const [error, setError] = useState<string>("");
 
@@ -30,7 +33,14 @@ export default function LockPage({ params }: { params: { id: string } }) {
     "match-3": { homeTeam: "Bayern Munich", awayTeam: "Borussia Dortmund", currentOdds: 2.5 },
   };
 
-  const match = matchData[params.id as keyof typeof matchData];
+  const match = matchData[matchId as keyof typeof matchData];
+
+  useEffect(() => {
+    params.then(({ id }) => {
+      setMatchId(id);
+      setFormData(prev => ({ ...prev, matchId: id }));
+    });
+  }, [params]);
 
   useEffect(() => {
     if (match) {
@@ -53,17 +63,11 @@ export default function LockPage({ params }: { params: { id: string } }) {
     setError("");
 
     try {
-      // Initialize iExec DataProtector
-      const dataProtector = new DataProtector({
-        apiUrl: process.env.NEXT_PUBLIC_IEXEC_API_URL || "https://v7.bellecour.iex.ec/api",
-      });
-
-      // Encrypt stake data
-      const data = { stakeAmount: formData.stakeAmount };
-      const result = await dataProtector.protectData({ data });
-      
-      setEncryptedRef(result.address);
-      console.log("Encrypted stake reference:", result.address);
+      // Mock encryption for now - in real app, use iExec DataProtector
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async operation
+      const mockEncryptedRef = `encrypted-ref-${Date.now()}`;
+      setEncryptedRef(mockEncryptedRef);
+      console.log("Encrypted stake reference:", mockEncryptedRef);
     } catch (err) {
       console.error("Encryption failed:", err);
       setError("Failed to encrypt stake data. Please try again.");
@@ -78,7 +82,6 @@ export default function LockPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    setIsLocking(true);
     setError("");
 
     try {
@@ -101,13 +104,11 @@ export default function LockPage({ params }: { params: { id: string } }) {
           },
         ],
         functionName: "lockForward",
-        args: [formData.matchId, Math.floor(formData.odds * 100), encryptedRef],
+        args: [formData.matchId, BigInt(Math.floor(formData.odds * 100)), encryptedRef],
       });
     } catch (err) {
       console.error("Contract call failed:", err);
       setError("Failed to lock forward. Please try again.");
-    } finally {
-      setIsLocking(false);
     }
   };
 

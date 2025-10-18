@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { useAccount } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
@@ -78,13 +77,17 @@ export default function Matches() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Link 
-                    href={`/lock/${match.id}`}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  <button
+                    onClick={() => {
+                      if (isConnected) {
+                        window.location.href = `/lock/${match.id}`;
+                      }
+                    }}
                     disabled={!isConnected}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
                   >
                     {isConnected ? "Lock Forward" : "Connect Wallet to Lock"}
-                  </Link>
+                  </button>
                   
                   <Link 
                     href={`/marketplace?match=${match.id}`}

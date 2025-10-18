@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useAccount, useReadContract } from "wagmi";
+import { useState, useEffect, useMemo } from "react";
+import { useAccount } from "wagmi";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import Link from "next/link";
-import { DataProtector } from "@iexec/dataprotector";
 
 interface Forward {
   id: number;
@@ -24,7 +23,7 @@ export default function Positions() {
   const [isDecrypting, setIsDecrypting] = useState<Record<number, boolean>>({});
 
   // Mock data for demonstration - in real app, fetch from contract
-  const mockForwards: Forward[] = [
+  const mockForwards: Forward[] = useMemo(() => [
     {
       id: 1,
       matchId: "match-1",
@@ -45,7 +44,7 @@ export default function Positions() {
       price: 1000000000000000000, // 1 ETH in wei
       createdAt: Date.now() - 172800000, // 2 days ago
     },
-  ];
+  ], [address]);
 
   useEffect(() => {
     if (isConnected && address) {
@@ -59,18 +58,16 @@ export default function Positions() {
       setUserForwards([]);
       setIsLoading(false);
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, mockForwards]);
 
-  const decryptStake = async (forwardId: number, encryptedRef: string) => {
+  const decryptStake = async (forwardId: number, _encryptedRef: string) => {
     setIsDecrypting(prev => ({ ...prev, [forwardId]: true }));
     
     try {
-      const dataProtector = new DataProtector({
-        apiUrl: process.env.NEXT_PUBLIC_IEXEC_API_URL || "https://v7.bellecour.iex.ec/api",
-      });
-
-      const stake = await dataProtector.getData(encryptedRef);
-      setDecryptedStakes(prev => ({ ...prev, [forwardId]: stake.stakeAmount }));
+      // Mock decryption for now - in real app, use iExec DataProtector
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async operation
+      const mockStakeAmount = Math.random() * 2 + 0.1; // Random stake between 0.1-2.1 ETH
+      setDecryptedStakes(prev => ({ ...prev, [forwardId]: mockStakeAmount }));
     } catch (err) {
       console.error("Decryption failed:", err);
     } finally {
@@ -135,7 +132,7 @@ export default function Positions() {
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📊</div>
             <h2 className="text-2xl font-semibold text-white mb-4">No Positions Yet</h2>
-            <p className="text-blue-200 mb-6">You haven't locked any forwards yet.</p>
+            <p className="text-blue-200 mb-6">You haven&apos;t locked any forwards yet.</p>
             <Link 
               href="/matches"
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
