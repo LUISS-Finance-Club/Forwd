@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
-contract BettingForwards {
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract BettingForwards is ReentrancyGuard, Ownable {
+    constructor() Ownable(msg.sender) {}
     struct Forward {
         uint256 id;
-        address owner;
         string matchId;
-        uint256 odds; // Stored as basis points (e.g., 150 = 1.5x)
-        string encryptedStakeRef; // iExec DataProtector reference
+        address owner;
+        uint256 odds;
+        string encryptedStakeRef;
         bool forSale;
-        uint256 salePrice;
+        uint256 price;
         uint256 createdAt;
     }
 
@@ -30,10 +34,10 @@ contract BettingForwards {
     
     event ForwardListed(
         uint256 indexed forwardId,
-        uint256 salePrice
+        uint256 price
     );
     
-    event ForwardPurchased(
+    event ForwardBought(
         uint256 indexed forwardId,
         address indexed buyer,
         address indexed seller,
@@ -45,16 +49,20 @@ contract BettingForwards {
         uint256 _odds,
         string memory _encryptedStakeRef
     ) external returns (uint256) {
+        require(_odds > 0, "Invalid odds");
+        require(bytes(_matchId).length > 0, "Match ID required");
+        require(bytes(_encryptedStakeRef).length > 0, "Encrypted stake reference required");
+        
         uint256 forwardId = nextForwardId++;
         
         forwards[forwardId] = Forward({
             id: forwardId,
-            owner: msg.sender,
             matchId: _matchId,
+            owner: msg.sender,
             odds: _odds,
             encryptedStakeRef: _encryptedStakeRef,
             forSale: false,
-            salePrice: 0,
+            price: 0,
             createdAt: block.timestamp
         });
         
@@ -66,31 +74,32 @@ contract BettingForwards {
         return forwardId;
     }
 
-    function listForSale(uint256 _forwardId, uint256 _salePrice) external {
+    function listForSale(uint256 _forwardId, uint256 _price) external {
         require(forwards[_forwardId].owner == msg.sender, "Not the owner");
-        require(_salePrice > 0, "Price must be greater than 0");
+        require(_price > 0, "Price must be positive");
+        require(!forwards[_forwardId].forSale, "Already listed for sale");
         
         forwards[_forwardId].forSale = true;
-        forwards[_forwardId].salePrice = _salePrice;
+        forwards[_forwardId].price = _price;
         
-        emit ForwardListed(_forwardId, _salePrice);
+        emit ForwardListed(_forwardId, _price);
     }
 
-    function buyForward(uint256 _forwardId) external payable {
+    function buyForward(uint256 _forwardId) external payable nonReentrant {
         Forward storage forward = forwards[_forwardId];
-        require(forward.forSale, "Forward not for sale");
+        require(forward.forSale, "Not for sale");
         require(msg.sender != forward.owner, "Cannot buy your own forward");
-        require(msg.value >= forward.salePrice, "Insufficient payment");
+        require(msg.value >= forward.price, "Insufficient payment");
         
         address seller = forward.owner;
-        uint256 price = forward.salePrice;
+        uint256 price = forward.price;
         uint256 fee = (price * platformFee) / 10000;
         uint256 sellerAmount = price - fee;
         
         // Transfer ownership
         forward.owner = msg.sender;
         forward.forSale = false;
-        forward.salePrice = 0;
+        forward.price = 0;
         
         // Update user forwards
         userForwards[msg.sender].push(_forwardId);
@@ -106,7 +115,7 @@ contract BettingForwards {
             payable(msg.sender).transfer(msg.value - price);
         }
         
-        emit ForwardPurchased(_forwardId, msg.sender, seller, price);
+        emit ForwardBought(_forwardId, msg.sender, seller, price);
     }
 
     function getUserForwards(address _user) external view returns (uint256[] memory) {
@@ -137,25 +146,12 @@ contract BettingForwards {
         return result;
     }
 
-    function withdrawFees() external {
-        require(msg.sender == owner(), "Only owner can withdraw fees");
+    function withdrawFees() external onlyOwner {
         payable(owner()).transfer(address(this).balance);
     }
 
-    function setPlatformFee(uint256 _fee) external {
-        require(msg.sender == owner(), "Only owner can set fee");
+    function setPlatformFee(uint256 _fee) external onlyOwner {
         require(_fee <= 1000, "Fee cannot exceed 10%");
         platformFee = _fee;
-    }
-
-    // Simple owner function for testing
-    address private _owner;
-    
-    constructor() {
-        _owner = msg.sender;
-    }
-    
-    function owner() public view returns (address) {
-        return _owner;
     }
 }

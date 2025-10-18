@@ -1,9 +1,10 @@
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-verify";
+import "@nomicfoundation/hardhat-chai-matchers";
 
 /** @type import('hardhat/config').HardhatUserConfig */
 export default {
-  solidity: "0.8.19",
+  solidity: "0.8.20",
   networks: {
     baseSepolia: {
       url: process.env.NEXT_PUBLIC_BASE_RPC || "https://sepolia.base.org",
