@@ -31,7 +31,7 @@ export default function Home() {
         {/* Logo row */}
         <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
           <span style={{ fontSize: "36px" }}>⚽</span>
-          <h1 style={{ fontSize: "28px", margin: 0 }}>PreStake</h1>
+          <h1 style={{ fontSize: "28px", margin: 0 }}>Forwd</h1>
         </div>
         
         {/* Wallet connection row */}

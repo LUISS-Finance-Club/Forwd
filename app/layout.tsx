@@ -6,7 +6,7 @@ import { RootProvider } from "./rootProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PreStake - Lock the Line Before It Moves",
+  title: "Forwd - Lock the Line Before It Moves",
   description: "Privacy-preserving sports betting forwards on Base with ENS integration",
   manifest: "/manifest.json",
   themeColor: "#0052FF",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "PreStake",
+    title: "Forwd",
   },
 };
 
@@ -36,6 +36,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        
       </head>
       <body className={inter.className}>
         <RootProvider>{children}</RootProvider>
