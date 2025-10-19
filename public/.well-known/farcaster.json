@@ -2,10 +2,10 @@
   "miniapp": {
     "version": "1",
     "name": "Forwd",
-    "iconUrl": "https://prestake-7eheoyul4p-yourid.vercel.app/icon-192.png",
+    "iconUrl": "https://prestake-yasos-projects-8d2ad919.vercel.app/icon-192.png",
     "homeUrl": "https://prestake-2yy040clp-yasos-projects-8d2ad919.vercel.app/",
     "description": "Learn derivatives through forwards and options trading",
-    "imageUrl": "https://prestake-7eheoyul4p-yourid.vercel.app/512-icon.png",
+    "imageUrl": "https://prestake-yasos-projects-8d2ad919.vercel.app/512-icon.png",
     "buttonTitle": "Start Forwd"
   },
   
