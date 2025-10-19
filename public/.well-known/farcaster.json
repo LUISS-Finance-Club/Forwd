@@ -1,5 +1,9 @@
 {
   "miniapp": {
+    "accountAssociation": {
+    "header": "eyJmaWQiOjEzOTMwNzIsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg5Q0FDOTBjNDcwRkE3OThBMjNCMzYxNTlkNjkwNDhCMTA1NzUxYTY4In0",
+    "payload": "eyJkb21haW4iOiJwcmVzdGFrZS1uYXZ5LnZlcmNlbC5hcHAifQ",
+    "signature": "F5IAfL/30qq4WojJHtxOX9WyH5PIBs0v6WSEOHC19zAPJGA3+Pdg6eyDfhduCqTqC+UjImNxhlu9PXgjOrToZRw=",
     "version": "1",
     "name": "Forwd",
     "iconUrl": "https://prestake-7eheoyul4p-yourid.vercel.app/icon-192.png",
@@ -8,5 +12,6 @@
     "imageUrl": "https://prestake-7eheoyul4p-yourid.vercel.app/512-icon.png",
     "buttonTitle": "Start Forwd"
   }
+  
 }
 
