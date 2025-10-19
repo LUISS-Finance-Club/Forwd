@@ -1,18 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
 import LockForward from "./components/LockForward";
+import { useAccount, useConnect } from "wagmi";
 import MyForwards from "./components/MyForwards";
 import Marketplace from "./components/Marketplace";
-import ENSAddress from "./components/ENSAddress";
 import BuyOptions from "./components/BuyOptions";
+import UserProfile from "./components/UserProfile";
 
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("lock");
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -55,36 +54,9 @@ export default function Home() {
             alignItems: "center"
           }}>
             {/* ✅ REMOVED GREEN ENS TEST BOX */}
-            <div style={{ 
-              flex: 1,
-              padding: "10px 15px", 
-              background: "#1a1a1a", 
-              borderRadius: "8px",
-              border: "1px solid #333",
-              fontSize: "14px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap"
-            }}>
-              <ENSAddress address={address} />
-            </div>
             
-            <button
-              onClick={() => disconnect()}
-              style={{
-                padding: "10px 15px",
-                background: "#ff4444",
-                border: "none",
-                borderRadius: "8px",
-                color: "white",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "14px",
-                whiteSpace: "nowrap"
-              }}
-            >
-              Disconnect
-            </button>
+            
+            <UserProfile />
           </div>
         ) : (
           <div style={{ 

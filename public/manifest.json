@@ -1,13 +1,12 @@
 {
   "name": "PreStake",
   "short_name": "PreStake",
-  "description": "Privacy-preserving sports betting forwards on Base",
+  "description": "Bloomberg Terminal for Sports Betting - Learn derivatives through forwards and options trading",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0052FF",
   "orientation": "portrait",
-  "scope": "/",
   "icons": [
     {
       "src": "/icon-192.png",
