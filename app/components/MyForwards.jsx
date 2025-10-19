@@ -158,29 +158,29 @@ export default function MyForwards() {
       {/* Glossary */}
       <details style={{ background: "#1a1a1a", padding: "15px", borderRadius: "12px", marginBottom: "20px", border: "1px solid #666", cursor: "pointer" }}>
         <summary style={{ fontWeight: "bold", color: "#0052FF", fontSize: "14px" }}>
-          📚 Glossary: What Do These Terms Mean?
+          Glossary: What Do These Terms Mean?
         </summary>
         <div style={{ marginTop: "15px", paddingLeft: "10px" }}>
           <div style={{ marginBottom: "15px" }}>
-            <strong style={{ color: "#00ff00", fontSize: "13px" }}>Forward Contract</strong>
+            <strong style={{ color: "#ff4444", fontSize: "13px" }}>Forward Contract</strong>
             <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
               You locked in today's betting odds for a future match. Like buying concert tickets early before price goes up!
             </p>
           </div>
           <div style={{ marginBottom: "15px" }}>
-            <strong style={{ color: "#0052FF", fontSize: "13px" }}>Locked Odds</strong>
+            <strong style={{ color: "#ffaa00", fontSize: "13px" }}>Locked Odds</strong>
             <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
               The multiplier you secured. If you bet 1 ETH at 2.5x and win, you get 2.5 ETH back.
             </p>
           </div>
           <div style={{ marginBottom: "15px" }}>
-            <strong style={{ color: "#ffaa00", fontSize: "13px" }}>For Sale / Premium</strong>
+            <strong style={{ color: "#00ff00", fontSize: "13px" }}>For Sale / Premium</strong>
             <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
               You can sell your locked position to others on the marketplace. Premium = your asking price.
             </p>
           </div>
           <div>
-            <strong style={{ color: "#ff4444", fontSize: "13px" }}>Why Would I Sell?</strong>
+            <strong style={{ color: "#0052FF", fontSize: "13px" }}>Why Would I Sell?</strong>
             <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
               Maybe odds got WORSE after you locked (good for you!). Someone else might pay extra to buy your better odds. That's profit without even betting!
             </p>

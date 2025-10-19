@@ -212,7 +212,6 @@ export default function LockForward() {
     );
   };
 
-
   const lockForward = async () => {
     if (!selectedMatch || !selectedOutcome || !stakeAmount) {
       alert("Please select a match, outcome, and enter stake amount!");
@@ -306,7 +305,7 @@ export default function LockForward() {
         }} />
       )}
 
-      {/* FASTER NEWS SCROLL - 8s instead of 15s */}
+      {/* CONTINUOUS SCROLLING NEWS TICKER - TRULY SEAMLESS */}
       <div style={{ 
         background: "linear-gradient(90deg, #0052FF 0%, #0066FF 100%)", 
         color: "white", 
@@ -314,78 +313,94 @@ export default function LockForward() {
         marginBottom: "15px", 
         borderRadius: "8px",
         boxShadow: "0 4px 12px rgba(0, 82, 255, 0.3)",
-        overflow: "hidden"
+        overflow: "hidden",
+        position: "relative",
+        display: "flex",
+        alignItems: "center"
+      }}>
+        {/* FIXED LIVE BADGE */}
+        <span style={{ 
+          background: "#ff4444", 
+          padding: "3px 8px", 
+          borderRadius: "4px", 
+          fontSize: "9px", 
+          fontWeight: "bold",
+          marginLeft: "10px",
+          marginRight: "10px",
+          flexShrink: 0,
+          zIndex: 10,
+          position: "relative"
+        }}>
+          LIVE
+        </span>
+        
+        {/* SCROLLING TEXT */}
+        <div style={{ 
+          display: "flex",
+          whiteSpace: "nowrap",
+          animation: "scroll 44s linear infinite",
+          fontSize: "11px", 
+          fontWeight: "500"
+        }}>
+          {newsText}{newsText}{newsText}{newsText}
+        </div>
+      </div>
+
+
+      {/* Portfolio Summary */}
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "repeat(3, 1fr)", 
+        gap: "15px", 
+        marginBottom: "20px" 
       }}>
         <div style={{ 
-          display: "flex", 
-          alignItems: "center",
-          whiteSpace: "nowrap",
-          animation: "scroll 8s linear infinite"
+          background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)", 
+          padding: "15px", 
+          borderRadius: "12px", 
+          border: "1px solid #0052FF" 
         }}>
-          <span style={{ 
-            background: "#ff4444", 
-            padding: "3px 8px", 
-            borderRadius: "4px", 
-            fontSize: "9px", 
-            fontWeight: "bold",
-            marginLeft: "15px",
-            marginRight: "15px"
-          }}>
-            LIVE
-          </span>
-          <div style={{ fontSize: "11px", fontWeight: "500" }}>
-            {newsText}{newsText}{newsText}
+          <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Total Value</div>
+          <div style={{ fontSize: "20px", fontWeight: "bold", color: "#fff" }}>
+            {(Math.random() * 0.05 + 0.003).toFixed(5)} ETH
+          </div>
+          <div style={{ fontSize: "10px", color: "#00ff00", marginTop: "5px" }}>
+            +{(Math.random() * 20 + 5).toFixed(1)}%
+          </div>
+        </div>
+        
+        <div style={{ 
+          background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)", 
+          padding: "15px", 
+          borderRadius: "12px", 
+          border: "1px solid #333" 
+        }}>
+          <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>Active Positions</div>
+          <div style={{ fontSize: "20px", fontWeight: "bold", color: "#fff" }}>
+            {Math.floor(Math.random() * 5 + 3)}
+          </div>
+          <div style={{ fontSize: "10px", color: "#888", marginTop: "5px" }}>
+            {Math.floor(Math.random() * 3 + 1)} for sale
+          </div>
+        </div>
+        
+        <div style={{ 
+          background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)", 
+          padding: "15px", 
+          borderRadius: "12px", 
+          border: "1px solid #333" 
+        }}>
+          <div style={{ fontSize: "11px", color: "#888", marginBottom: "5px" }}>24h P&L</div>
+          <div style={{ fontSize: "20px", fontWeight: "bold", color: "#00ff00" }}>
+            +0.{String(Math.floor(Math.random() * 9000 + 1000)).padStart(5, '0')} ETH
+          </div>
+          <div style={{ fontSize: "10px", color: "#00ff00", marginTop: "5px" }}>
+            +{(Math.random() * 15 + 3).toFixed(1)}%
           </div>
         </div>
       </div>
 
-      {/* PORTFOLIO + TERMINAL */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "15px" }}>
-        <div style={{ padding: "12px", background: "#1a1a1a", borderRadius: "10px", border: "1px solid #0052FF" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "12px", color: "#0052FF" }}>Portfolio</h3>
-          <div style={{ display: "grid", gap: "6px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px" }}>
-              <span style={{ color: "#888" }}>Locked:</span>
-              <strong style={{ color: "#fff" }}>0.00 ETH</strong>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px" }}>
-              <span style={{ color: "#888" }}>Positions:</span>
-              <strong style={{ color: "#fff" }}>0</strong>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px" }}>
-              <span style={{ color: "#888" }}>Potential:</span>
-              <strong style={{ color: "#00ff00" }}>0.00 ETH</strong>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px" }}>
-              <span style={{ color: "#888" }}>Risk:</span>
-              <strong style={{ color: "#ff4444" }}>0.00 ETH</strong>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ padding: "12px", background: "#0a0a0a", borderRadius: "10px", border: "1px solid #0052FF" }}>
-          <h2 style={{ margin: "0 0 4px 0", fontSize: "14px" }}>Live Terminal</h2>
-          <p style={{ margin: "0 0 8px 0", fontSize: "10px", color: "#888" }}>
-            Study charts, lock when ready
-          </p>
-          <div style={{ display: "flex", gap: "10px", fontSize: "10px" }}>
-            <div>
-              <span style={{ color: "#888" }}>Status:</span>{" "}
-              <strong style={{ color: "#00ff00" }}>LIVE</strong>
-            </div>
-            <div>
-              <span style={{ color: "#888" }}>Update:</span>{" "}
-              <strong>2s</strong>
-            </div>
-            <div>
-              <span style={{ color: "#888" }}>Last:</span>{" "}
-              <strong>{lastUpdate.toLocaleTimeString()}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ACTIVITY FEED - MORE FREQUENT */}
+      {/* ACTIVITY FEED */}
       <div style={{ background: "#1a1a1a", padding: "12px", borderRadius: "10px", marginBottom: "15px", border: "1px solid #333" }}>
         <h3 style={{ marginTop: 0, marginBottom: "10px", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
           Live Activity
@@ -409,7 +424,7 @@ export default function LockForward() {
         </div>
       </div>
 
-      {/* CHARTS PANEL WITH DROPDOWN */}
+      {/* CHARTS PANEL */}
       <div style={{ background: "#1a1a1a", padding: "15px", borderRadius: "10px", marginBottom: "20px", border: "1px solid #333" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
           <h3 style={{ margin: 0, fontSize: "13px" }}>
@@ -454,7 +469,7 @@ export default function LockForward() {
         ))}
       </div>
 
-      {/* Educational - Compact */}
+      {/* Educational */}
       <div style={{ background: "#1a1a1a", padding: "12px", borderRadius: "10px", marginBottom: "20px", border: "1px solid #0052FF" }}>
         <h3 style={{ marginTop: 0, marginBottom: "10px", fontSize: "12px" }}>Chart Reading</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px" }}>
@@ -664,7 +679,7 @@ export default function LockForward() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-33.33%);
+            transform: translateX(-25%);
           }
         }
         @keyframes fadeIn {

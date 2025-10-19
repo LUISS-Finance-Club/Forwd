@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAccount, usePublicClient, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { CONTRACT_ADDRESS_V3, CONTRACT_ABI_V3 } from "../utils/contractV3";
 import { parseEther, formatEther } from "viem";
+import ENSProfileCard from './ENSProfileCard';
 
 const MATCHES = [
   { id: 1, homeTeam: "Galatasaray", awayTeam: "Fenerbahçe", homeOdds: 2.1, drawOdds: 3.3, awayOdds: 1.9, league: "Süper Lig" },
@@ -134,82 +135,55 @@ export default function BuyOptions() {
             Options give you the RIGHT (not obligation) to bet. If odds get worse, use it. If odds get better, ignore it!
           </p>
           
-          {/* EDUCATIONAL EXPLAINER - SMALLER FONTS */}
-          <div style={{ background: "#1a1a1a", padding: "15px", borderRadius: "12px", marginBottom: "20px", border: "1px solid #00ff00" }}>
-            <h3 style={{ marginTop: 0, fontSize: "11px" }}>Real Example: What If Odds Change?</h3>
-            
-            <div style={{ marginBottom: "12px" }}>
-              <h4 style={{ color: "#0052FF", fontSize: "10px", marginBottom: "5px" }}>Scenario A: Odds Get WORSE (1.50 → 1.30)</h4>
-              <ul style={{ color: "#888", lineHeight: "1.6", fontSize: "9px", marginBottom: "10px", paddingLeft: "20px" }}>
-                <li>You locked Galatasaray at 1.50 for 0.001 ETH</li>
-                <li>Star player confirmed fit → Team favored → Odds drop to 1.30</li>
-                <li><strong style={{ color: "#00ff00" }}>Your move:</strong> Exercise your option! Bet at your 1.50</li>
-                <li><strong style={{ color: "#00ff00" }}>Result:</strong> €100 bet wins €150 vs market's €130 = Save €20!</li>
-              </ul>
-            </div>
+          {/* EDUCATIONAL EXPLAINER - MATCHING FONT SIZES */}
+          <details style={{ background: "#1a1a1a", padding: "15px", borderRadius: "12px", marginBottom: "20px", border: "1px solid #666", cursor: "pointer" }}>
+            <summary style={{ fontWeight: "bold", color: "#0052FF", fontSize: "14px" }}>
+              Real Example: What If Odds Change?
+            </summary>
+            <div style={{ marginTop: "15px", paddingLeft: "10px" }}>
+              <div style={{ marginBottom: "15px" }}>
+                <strong style={{ color: "#ff4444", fontSize: "13px" }}>Scenario A: Odds Get WORSE (1.50 → 1.30)</strong>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
+                  You locked Galatasaray at 1.50 for 0.001 ETH. Star player confirmed fit → Team favored → Odds drop to 1.30. Your move: Exercise your option! Bet at your 1.50. Result: €100 bet wins €150 vs market's €130 = Save €20!
+                </p>
+              </div>
 
-            <div style={{ marginBottom: "12px" }}>
-              <h4 style={{ color: "#ff4444", fontSize: "10px", marginBottom: "5px" }}>Scenario B: Odds Get BETTER (1.50 → 1.80)</h4>
-              <ul style={{ color: "#888", lineHeight: "1.6", fontSize: "9px", marginBottom: "10px", paddingLeft: "20px" }}>
-                <li>You locked Galatasaray at 1.50 for 0.001 ETH</li>
-                <li>Star player injured → Team weakened → Odds rise to 1.80</li>
-                <li><strong style={{ color: "#ffaa00" }}>Your move:</strong> Let option expire! Bet at market's 1.80</li>
-                <li><strong style={{ color: "#ffaa00" }}>Result:</strong> Only lose 0.001 ETH premium (cheap insurance!)</li>
-              </ul>
-            </div>
+              <div style={{ marginBottom: "15px" }}>
+                <strong style={{ color: "#ffaa00", fontSize: "13px" }}>Scenario B: Odds Get BETTER (1.50 → 1.80)</strong>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
+                  You locked Galatasaray at 1.50 for 0.001 ETH. Star player injured → Team weakened → Odds rise to 1.80. Your move: Let option expire! Bet at market's 1.80. Result: Only lose 0.001 ETH premium (cheap insurance!)
+                </p>
+              </div>
 
-            <div style={{ padding: "10px", background: "#0a0a0a", borderRadius: "6px" }}>
-              <strong style={{ color: "#00ff00", fontSize: "9px" }}>What You Learn:</strong>
-              <p style={{ color: "#888", marginTop: "5px", marginBottom: 0, fontSize: "8px", lineHeight: "1.4" }}>
-                This is exactly how stock options work! Pay small premium for the RIGHT (not obligation) to buy/sell at a set price. If market moves against you, walk away. You're learning real derivatives trading through sports!
-              </p>
+              <div>
+                <strong style={{ color: "#00ff00", fontSize: "13px" }}>What You're Learning</strong>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
+                  This is exactly how stock options work! Pay small premium for the RIGHT (not obligation) to buy/sell at a set price. If market moves against you, walk away. You're learning real derivatives trading through sports!
+                </p>
+              </div>
             </div>
+          </details>
 
-            {/* COMPARISON TABLE */}
-            <div style={{ overflowX: "auto", marginTop: "12px" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", background: "#0a0a0a", borderRadius: "6px", fontSize: "9px" }}>
-                <thead>
-                  <tr style={{ background: "#0052FF" }}>
-                    <th style={{ padding: "6px", textAlign: "left", color: "white", fontSize: "9px" }}>Your Action</th>
-                    <th style={{ padding: "6px", textAlign: "left", color: "white", fontSize: "9px" }}>Cost</th>
-                    <th style={{ padding: "6px", textAlign: "left", color: "white", fontSize: "9px" }}>If Wins</th>
-                    <th style={{ padding: "6px", textAlign: "left", color: "white", fontSize: "9px" }}>Outcome</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: "1px solid #333" }}>
-                    <td style={{ padding: "6px", color: "#fff", fontSize: "9px" }}>Execute at 1.50</td>
-                    <td style={{ padding: "6px", color: "#888", fontSize: "9px" }}>€100.001</td>
-                    <td style={{ padding: "6px", color: "#888", fontSize: "9px" }}>€150</td>
-                    <td style={{ padding: "6px", color: "#ff4444", fontSize: "9px" }}>Lost €30 vs market</td>
-                  </tr>
-                  <tr style={{ borderBottom: "1px solid #333" }}>
-                    <td style={{ padding: "6px", color: "#fff", fontSize: "9px" }}>Expire, bet at 1.80</td>
-                    <td style={{ padding: "6px", color: "#888", fontSize: "9px" }}>€100.001</td>
-                    <td style={{ padding: "6px", color: "#888", fontSize: "9px" }}>€180</td>
-                    <td style={{ padding: "6px", color: "#00ff00", fontSize: "9px" }}>Best choice!</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: "6px", color: "#fff", fontSize: "9px" }}>Don't bet</td>
-                    <td style={{ padding: "6px", color: "#888", fontSize: "9px" }}>€0.001</td>
-                    <td style={{ padding: "6px", color: "#888", fontSize: "9px" }}>€0</td>
-                    <td style={{ padding: "6px", color: "#888", fontSize: "9px" }}>Avoided risk</td>
-                  </tr>
-                </tbody>
-              </table>
+          {/* HOW OPTIONS WORK */}
+          <details style={{ background: "#1a1a1a", padding: "15px", borderRadius: "12px", marginBottom: "20px", border: "1px solid #666", cursor: "pointer" }}>
+            <summary style={{ fontWeight: "bold", color: "#0052FF", fontSize: "14px" }}>
+              How Options Work
+            </summary>
+            <div style={{ marginTop: "15px", paddingLeft: "10px" }}>
+              <div style={{ marginBottom: "15px" }}>
+                <strong style={{ color: "#ff4444", fontSize: "13px" }}>Basic Mechanics</strong>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
+                  Pay small premium (e.g., 0.001 ETH) to get the RIGHT to bet at locked odds for 7 days. If odds worsen → Exercise. If odds improve → Ignore, bet at market rate.
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: "#ffaa00", fontSize: "13px" }}>Risk Management</strong>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "5px", marginBottom: 0 }}>
+                  Maximum loss = premium paid. Unlimited upside potential. This is how professionals hedge volatility risk in traditional markets!
+                </p>
+              </div>
             </div>
-          </div>
-
-          {/* SMALL "HOW OPTIONS WORK" BOX */}
-          <div style={{ background: "#1a1a1a", padding: "15px", borderRadius: "12px", marginBottom: "20px", border: "1px solid #0052FF" }}>
-            <h3 style={{ marginTop: 0, fontSize: "11px" }}>How Options Work:</h3>
-            <ul style={{ color: "#888", lineHeight: "1.6", marginBottom: 0, fontSize: "9px", paddingLeft: "20px" }}>
-              <li>Pay small premium (e.g., 0.001 ETH)</li>
-              <li>Get RIGHT to bet at locked odds for 7 days</li>
-              <li>If odds worsen → Exercise</li>
-              <li>If odds improve → Ignore, bet at market</li>
-            </ul>
-          </div>
+          </details>
 
           {/* MATCHES */}
           <div style={{ display: "grid", gap: "20px" }}>
@@ -237,7 +211,7 @@ export default function BuyOptions() {
             ))}
           </div>
 
-          {/* PREMIUM INPUT - Only show when match selected */}
+          {/* PREMIUM INPUT */}
           {selectedMatch && (
             <div style={{ marginTop: "20px", padding: "20px", background: "#0a0a0a", border: "2px solid #0052FF", borderRadius: "12px" }}>
               <h3 style={{ marginTop: 0 }}>Option Premium</h3>
@@ -251,7 +225,7 @@ export default function BuyOptions() {
             </div>
           )}
 
-          {/* STICKY BUTTON AT BOTTOM */}
+          {/* STICKY BUTTON */}
           {selectedMatch && (
             <div style={{
               position: "fixed",
@@ -322,7 +296,7 @@ export default function BuyOptions() {
                         Exercise Option
                       </button>
                     )}
-                    {option.exercised && <div style={{ marginTop: "10px", padding: "10px", background: "#0a3d0a", borderRadius: "8px", color: "#0f0", textAlign: "center" }}>Exercised - Forward Created</div>}
+                    {option.exercised && <div style={{ marginTop: "10px", padding: "10px", background: "#0a3d0a", borderRadius: "8px", color: "#00ff00", textAlign: "center" }}>Exercised - Forward Created</div>}
                     {isExpired && !option.exercised && <div style={{ marginTop: "10px", padding: "10px", background: "#3d0a0a", borderRadius: "8px", color: "#ff4444", textAlign: "center" }}>Expired - Lost Premium</div>}
                   </div>
                 );
