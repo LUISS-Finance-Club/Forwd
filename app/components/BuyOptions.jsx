@@ -115,7 +115,7 @@ export default function BuyOptions() {
   }
 
   return (
-    <div>
+    <div style={{ paddingBottom: selectedMatch && view === "buy" ? "100px" : "0" }}>
       {/* Toggle between Buy and My Options */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <button onClick={() => setView("buy")} style={{ flex: 1, padding: "12px", background: view === "buy" ? "#0052FF" : "#2a2a2a", border: "1px solid #333", borderRadius: "8px", color: "white", cursor: "pointer", fontWeight: "bold" }}>
@@ -237,12 +237,52 @@ export default function BuyOptions() {
             ))}
           </div>
 
+          {/* PREMIUM INPUT - Only show when match selected */}
           {selectedMatch && (
             <div style={{ marginTop: "20px", padding: "20px", background: "#0a0a0a", border: "2px solid #0052FF", borderRadius: "12px" }}>
               <h3 style={{ marginTop: 0 }}>Option Premium</h3>
-              <input type="number" step="0.0001" value={optionPremium} onChange={(e) => setOptionPremium(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #333", background: "#1a1a1a", color: "white", fontSize: "16px", marginBottom: "10px" }} />
-              <button onClick={buyOption} disabled={isPending || isConfirming} style={{ width: "100%", padding: "15px", background: isPending || isConfirming ? "#666" : "#00ff00", color: isPending || isConfirming ? "white" : "black", border: "none", borderRadius: "12px", cursor: isPending || isConfirming ? "not-allowed" : "pointer", fontWeight: "bold", fontSize: "18px" }}>
-                {isPending ? "Confirming..." : isConfirming ? "Processing..." : isSuccess ? "Bought!" : "Buy Option"}
+              <input 
+                type="number" 
+                step="0.0001" 
+                value={optionPremium} 
+                onChange={(e) => setOptionPremium(e.target.value)} 
+                style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #333", background: "#1a1a1a", color: "white", fontSize: "16px" }} 
+              />
+            </div>
+          )}
+
+          {/* STICKY BUTTON AT BOTTOM */}
+          {selectedMatch && (
+            <div style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: "15px 20px",
+              background: "#0a0a0a",
+              borderTop: "2px solid #0052FF",
+              zIndex: 1000,
+              boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.5)"
+            }}>
+              <button 
+                onClick={buyOption} 
+                disabled={isPending || isConfirming} 
+                style={{ 
+                  width: "100%", 
+                  maxWidth: "600px",
+                  margin: "0 auto",
+                  display: "block",
+                  padding: "15px", 
+                  background: isPending || isConfirming ? "#666" : "#00ff00", 
+                  color: isPending || isConfirming ? "white" : "black", 
+                  border: "none", 
+                  borderRadius: "12px", 
+                  cursor: isPending || isConfirming ? "not-allowed" : "pointer", 
+                  fontWeight: "bold", 
+                  fontSize: "16px" 
+                }}
+              >
+                {isPending ? "Confirming..." : isConfirming ? "Processing..." : isSuccess ? "Bought!" : `Buy Option for ${optionPremium} ETH`}
               </button>
             </div>
           )}

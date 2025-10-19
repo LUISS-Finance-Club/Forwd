@@ -12,7 +12,7 @@ contract BettingForwardsV2 {
         address owner;
         uint256 matchId;
         uint256 lockedOdds;        // e.g., 3000 = 3.00x odds
-        uint256 lockTime;
+        uint256 stakeAmount;       // Amount staked
         address protectedDataAddress;  // ✅ REAL iExec protected data address
         bool isForSale;
         uint256 premium;           // Price to buy this forward
@@ -26,7 +26,7 @@ contract BettingForwardsV2 {
         address indexed owner,
         uint256 matchId,
         uint256 odds,
-        address protectedDataAddress  // ✅ Emit real address
+        address protectedDataAddress
     );
     
     event ForwardListed(
@@ -42,6 +42,11 @@ contract BettingForwardsV2 {
         uint256 premium
     );
     
+    event SaleCancelled(
+        uint256 indexed forwardId,
+        address indexed owner
+    );
+    
     /**
      * @notice Lock betting odds forward with encrypted stake
      * @param _matchId The sports match identifier
@@ -51,7 +56,7 @@ contract BettingForwardsV2 {
     function lockForward(
         uint256 _matchId,
         uint256 _odds,
-        address _protectedDataAddress  // ✅ Accept address instead of string
+        address _protectedDataAddress
     ) external payable {
         require(msg.value >= 0.0001 ether, "Minimum stake: 0.0001 ETH");
         require(_odds > 1000, "Odds must be > 1.0x");
@@ -61,8 +66,8 @@ contract BettingForwardsV2 {
             owner: msg.sender,
             matchId: _matchId,
             lockedOdds: _odds,
-            lockTime: block.timestamp,
-            protectedDataAddress: _protectedDataAddress,  // ✅ Store real address
+            stakeAmount: msg.value,
+            protectedDataAddress: _protectedDataAddress,
             isForSale: false,
             premium: 0
         });
@@ -74,7 +79,7 @@ contract BettingForwardsV2 {
             msg.sender,
             _matchId,
             _odds,
-            _protectedDataAddress  // ✅ Emit real address
+            _protectedDataAddress
         );
     }
     
@@ -93,6 +98,22 @@ contract BettingForwardsV2 {
         forward.premium = _premium;
         
         emit ForwardListed(_forwardId, msg.sender, _premium);
+    }
+    
+    /**
+     * @notice Cancel forward sale listing
+     * @param _forwardId The forward to remove from sale
+     */
+    function cancelSale(uint256 _forwardId) external {
+        require(_forwardId < forwards.length, "Invalid forward ID");
+        Forward storage forward = forwards[_forwardId];
+        require(forward.owner == msg.sender, "Not owner");
+        require(forward.isForSale, "Not for sale");
+        
+        forward.isForSale = false;
+        forward.premium = 0;
+        
+        emit SaleCancelled(_forwardId, msg.sender);
     }
     
     /**

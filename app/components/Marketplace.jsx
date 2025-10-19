@@ -44,7 +44,7 @@ export default function Marketplace() {
     if (allForwards && allForwards.length > 0) {
       const realForwards = allForwards
         .map((forward, index) => ({ ...forward, id: index, isDummy: false }))
-        .filter(f => f.isForSale);
+        .filter(f => f.isForSale && f.owner !== '0x0000000000000000000000000000000000000000'); // ⬅️ ADD THIS FILTER
       forwards = [...forwards, ...realForwards];
     }
     
@@ -55,6 +55,7 @@ export default function Marketplace() {
     setForSaleForwards(forwards);
     setFilteredForwards(forwards);
   }, [allForwards, showDummyData]);
+
 
   useEffect(() => {
     if (!searchENS) {

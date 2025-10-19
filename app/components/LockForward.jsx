@@ -23,6 +23,29 @@ const ACTIVITY_TEMPLATES = [
   { user: "ens.eth", action: "locked", match: "Inter Milan AWAY", odds: "2.1x", type: "lock" },
 ];
 
+// Helper function to generate initial history
+const generateInitialHistory = (baseOdds, points = 20) => {
+  const history = [];
+  let current = { home: baseOdds.home, draw: baseOdds.draw, away: baseOdds.away };
+  
+  for (let i = 0; i < points; i++) {
+    const changeHome = (Math.random() - 0.5) * 0.2;
+    const changeDraw = (Math.random() - 0.5) * 0.2;
+    const changeAway = (Math.random() - 0.5) * 0.2;
+    
+    current = {
+      home: Math.max(1.01, Math.min(5.0, current.home + changeHome)),
+      draw: Math.max(2.0, Math.min(6.0, current.draw + changeDraw)),
+      away: Math.max(1.01, Math.min(5.0, current.away + changeAway)),
+      time: Date.now() - (points - i) * 3000
+    };
+    
+    history.push(current);
+  }
+  
+  return history;
+};
+
 export default function LockForward() {
   const { address, isConnected } = useAccount();
   const { data: hash, writeContract, isPending } = useWriteContract();
@@ -39,6 +62,19 @@ export default function LockForward() {
 
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
+  // INITIALIZE WITH PRE-POPULATED GRAPH DATA
+  useEffect(() => {
+    const initialHistory = {};
+    INITIAL_MATCHES.forEach(match => {
+      initialHistory[`match-${match.id}`] = generateInitialHistory({
+        home: match.homeOdds,
+        draw: match.drawOdds,
+        away: match.awayOdds
+      });
+    });
+    setOddsHistory(initialHistory);
+  }, []);
+
   // Generate activity feed
   useEffect(() => {
     const generateActivity = () => {
@@ -51,7 +87,7 @@ export default function LockForward() {
 
     const interval = setInterval(() => {
       setActivityFeed(prev => [generateActivity(), ...prev.slice(0, 4)]);
-    }, 8000); // New activity every 8 seconds
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
@@ -61,10 +97,10 @@ export default function LockForward() {
     const interval = setInterval(() => {
       setMatches(prevMatches =>
         prevMatches.map(match => {
-          const shouldChange = Math.random() < 0.7; // 70% chance (was 50%)
+          const shouldChange = Math.random() < 0.7;
           if (!shouldChange) return match;
 
-          const changeHome = (Math.random() - 0.5) * 0.25; // ±0.125 (was ±0.075)
+          const changeHome = (Math.random() - 0.5) * 0.25;
           const changeDraw = (Math.random() - 0.5) * 0.25;
           const changeAway = (Math.random() - 0.5) * 0.25;
 
@@ -93,7 +129,7 @@ export default function LockForward() {
         })
       );
       setLastUpdate(new Date());
-    }, 2000); // Update every 2s (was 3s)
+    }, 2000);
 
     return () => clearInterval(interval);
   }, []);
@@ -138,6 +174,23 @@ export default function LockForward() {
       );
     };
 
+    // Grid lines - 3 horizontal lines
+    const gridLines = [0.25, 0.5, 0.75].map((ratio, i) => {
+      const y = padding + ratio * (height - 2 * padding);
+      return (
+        <line
+          key={`grid-${i}`}
+          x1={padding}
+          y1={y}
+          x2={width - padding}
+          y2={y}
+          stroke="#333"
+          strokeWidth="0.5"
+          strokeDasharray="2,2"
+        />
+      );
+    });
+
     const latestHome = history[history.length - 1].home;
     const latestDraw = history[history.length - 1].draw;
     const latestAway = history[history.length - 1].away;
@@ -145,6 +198,7 @@ export default function LockForward() {
     return (
       <div style={{ flex: 1 }}>
         <svg width="100%" height="150" viewBox={`0 0 ${width} ${height}`} style={{ background: "#0a0a0a", borderRadius: "8px" }}>
+          {gridLines}
           {createPath('home', '#0052FF')}
           {createPath('draw', '#888')}
           {createPath('away', '#00ff00')}
@@ -157,6 +211,7 @@ export default function LockForward() {
       </div>
     );
   };
+
 
   const lockForward = async () => {
     if (!selectedMatch || !selectedOutcome || !stakeAmount) {
@@ -200,7 +255,7 @@ export default function LockForward() {
     );
   }
 
-  const newsText = "     BREAKING: Icardi confirmed starting - Galatasaray odds fell 0.2x     LIVE: Roma 1-0 Lazio (65 min)     WEATHER: Heavy rain in Milano     WHALE: vitalik.eth locked 0.5 ETH on Juventus     HIGH VOLUME: Beşiktaş vs Trabzonspor +300%     VOLATILITY: Fenerbahçe moved 0.4x last hour     ";
+  const newsText = "     BREAKING: Icardi confirmed starting lineup Galatasaray odds fell 0.2x     LIVE UPDATE: Roma leads Lazio 1-0 at 65 minutes Away odds rising     WEATHER ALERT: Heavy rain expected in Milano for AC Milan match could affect gameplay     WHALE ACTIVITY: vitalik.eth just locked 0.5 ETH position on Juventus at 1.9x odds     HIGH VOLUME: Beşiktaş vs Trabzonspor seeing 300% more betting volume than usual     VOLATILITY WARNING: Fenerbahçe odds moved 0.4x in last hour showing high market uncertainty     INJURY REPORT: Inter Milan defender Bastoni doubtful for Sunday match odds adjusting     CONFIRMED: Napoli striker Osimhen returns from suspension team odds improving     SHARP MONEY: 70% of large bets placed on Galatasaray despite lower odds institutional interest     BREAKING: Icardi confirmed starting lineup Galatasaray odds fell 0.2x     LIVE UPDATE: Roma leads Lazio 1-0 at 65 minutes Away odds rising     ";
 
   return (
     <div style={{ paddingBottom: "100px" }}>
@@ -239,7 +294,6 @@ export default function LockForward() {
         </div>
       )}
 
-      {/* OVERLAY FOR POPUP */}
       {showPopup && (
         <div onClick={() => setShowPopup(false)} style={{
           position: "fixed",
@@ -252,7 +306,7 @@ export default function LockForward() {
         }} />
       )}
 
-      {/* FAST SCROLLING NEWS TICKER - NO EMOJIS */}
+      {/* FASTER NEWS SCROLL - 8s instead of 15s */}
       <div style={{ 
         background: "linear-gradient(90deg, #0052FF 0%, #0066FF 100%)", 
         color: "white", 
@@ -266,7 +320,7 @@ export default function LockForward() {
           display: "flex", 
           alignItems: "center",
           whiteSpace: "nowrap",
-          animation: "scroll 15s linear infinite"
+          animation: "scroll 8s linear infinite"
         }}>
           <span style={{ 
             background: "#ff4444", 

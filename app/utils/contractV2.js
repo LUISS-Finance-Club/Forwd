@@ -1,5 +1,5 @@
-// V2 CONTRACT - With real iExec address support
-export const CONTRACT_ADDRESS_V2 = "0x202880fD62048Fbd7c70c6bEb4583a88357B2218";
+// V2 CONTRACT - With complete ABI including stakeAmount
+export const CONTRACT_ADDRESS_V2 = "0xa0282686482eb9454b4e98EabCb2fdBc7b8d3F3A";
 
 export const CONTRACT_ABI_V2 = [
   {
@@ -25,7 +25,7 @@ export const CONTRACT_ABI_V2 = [
           { "name": "owner", "type": "address" },
           { "name": "matchId", "type": "uint256" },
           { "name": "lockedOdds", "type": "uint256" },
-          { "name": "lockTime", "type": "uint256" },
+          { "name": "stakeAmount", "type": "uint256" },
           { "name": "protectedDataAddress", "type": "address" },
           { "name": "isForSale", "type": "bool" },
           { "name": "premium", "type": "uint256" }
@@ -62,6 +62,13 @@ export const CONTRACT_ABI_V2 = [
       { "name": "_forwardId", "type": "uint256" },
       { "name": "_premium", "type": "uint256" }
     ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "cancelSale",
+    "inputs": [{ "name": "_forwardId", "type": "uint256" }],
     "outputs": [],
     "stateMutability": "nonpayable"
   }
