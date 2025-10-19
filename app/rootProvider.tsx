@@ -5,7 +5,7 @@ import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { http, createConfig } from "wagmi";
-import { injected, coinbaseWallet } from "wagmi/connectors";
+import { coinbaseWallet } from "wagmi/connectors";
 import "@coinbase/onchainkit/styles.css";
 
 const queryClient = new QueryClient();
@@ -13,8 +13,7 @@ const queryClient = new QueryClient();
 const wagmiConfig = createConfig({
   chains: [baseSepolia],
   connectors: [
-    injected({ target: "metaMask" }),
-    coinbaseWallet({ appName: "PreStake" }),
+    coinbaseWallet({ appName: "PreStake" }), // ✅ Only Coinbase Wallet
   ],
   transports: {
     [baseSepolia.id]: http(),

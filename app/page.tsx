@@ -5,7 +5,8 @@ import LockForward from "./components/LockForward";
 import MyForwards from "./components/MyForwards";
 import Marketplace from "./components/Marketplace";
 import ENSAddress from "./components/ENSAddress";
-import ENSShowcase from "./components/ENSShowcase";
+import BuyOptions from "./components/BuyOptions";
+
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("lock");
@@ -20,82 +21,92 @@ export default function Home() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#0a0a0a", color: "white" }}>
-      {/* Header */}
+      {/* Header - MOBILE OPTIMIZED */}
       <header style={{
         display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "20px 40px",
+        flexDirection: "column",
+        gap: "15px",
+        padding: "15px 20px",
         borderBottom: "1px solid #333"
       }}>
+        {/* Logo row */}
         <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <span style={{ fontSize: "48px" }}>⚽</span>
-          <h1 style={{ fontSize: "36px", margin: 0 }}>PreStake</h1>
+          <span style={{ fontSize: "36px" }}>⚽</span>
+          <h1 style={{ fontSize: "28px", margin: 0 }}>PreStake</h1>
         </div>
         
+        {/* Wallet connection row */}
         {!mounted ? (
           <div style={{ 
-            padding: "10px 20px",
+            padding: "10px 15px",
             background: "#1a1a1a",
             borderRadius: "8px",
             border: "1px solid #333",
-            color: "#666"
+            color: "#666",
+            fontSize: "14px",
+            textAlign: "center"
           }}>
             Loading...
           </div>
         ) : isConnected ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
-            
-            {/* ENS TEST - Shows vitalik.eth to prove ENS works */}
-            <span style={{ 
-              padding: "8px 15px", 
-              background: "#0a3d0a", 
-              borderRadius: "8px",
-              border: "1px solid #0f0",
-              fontSize: "14px"
-            }}>
-              ✅ ENS Test: <ENSAddress address="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" />
-            </span>
-            
-            {/* Your actual wallet address */}
-            <span style={{ 
-              padding: "10px 20px", 
+          <div style={{ 
+            display: "flex",
+            gap: "10px",
+            alignItems: "center"
+          }}>
+            {/* ✅ REMOVED GREEN ENS TEST BOX */}
+            <div style={{ 
+              flex: 1,
+              padding: "10px 15px", 
               background: "#1a1a1a", 
               borderRadius: "8px",
-              border: "1px solid #333"
+              border: "1px solid #333",
+              fontSize: "14px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap"
             }}>
               <ENSAddress address={address} />
-            </span>
+            </div>
             
             <button
               onClick={() => disconnect()}
               style={{
-                padding: "10px 20px",
+                padding: "10px 15px",
                 background: "#ff4444",
                 border: "none",
                 borderRadius: "8px",
                 color: "white",
                 cursor: "pointer",
-                fontWeight: "bold"
+                fontWeight: "bold",
+                fontSize: "14px",
+                whiteSpace: "nowrap"
               }}
             >
               Disconnect
             </button>
           </div>
         ) : (
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column",
+            gap: "10px",
+            width: "100%"
+          }}>
             {connectors.map((connector) => (
               <button
                 key={connector.id}
                 onClick={() => connect({ connector })}
                 style={{
-                  padding: "10px 20px",
+                  width: "100%",
+                  padding: "12px 20px",
                   background: "#0052FF",
                   border: "none",
                   borderRadius: "8px",
                   color: "white",
                   cursor: "pointer",
-                  fontWeight: "bold"
+                  fontWeight: "bold",
+                  fontSize: "16px"
                 }}
               >
                 Connect {connector.name}
@@ -105,96 +116,105 @@ export default function Home() {
         )}
       </header>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs - MOBILE OPTIMIZED */}
       <nav style={{
-        display: "flex",
-        gap: "20px",
-        padding: "20px 40px",
-        borderBottom: "1px solid #333"
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+        gap: "10px",
+        padding: "15px 20px",
+        borderBottom: "1px solid #333",
+        overflowX: "auto"
       }}>
         <button
           onClick={() => setActiveTab("lock")}
           style={{
-            padding: "10px 20px",
+            padding: "12px 15px",
             background: activeTab === "lock" ? "#0052FF" : "transparent",
             border: "1px solid #333",
             borderRadius: "8px",
             color: "white",
             cursor: "pointer",
-            fontSize: "16px"
+            fontSize: "14px",
+            whiteSpace: "nowrap"
           }}
         >
-          🔒 Lock Forward
+          Lock
         </button>
         <button
           onClick={() => setActiveTab("myforwards")}
           style={{
-            padding: "10px 20px",
+            padding: "12px 15px",
             background: activeTab === "myforwards" ? "#0052FF" : "transparent",
             border: "1px solid #333",
             borderRadius: "8px",
             color: "white",
             cursor: "pointer",
-            fontSize: "16px"
+            fontSize: "14px",
+            whiteSpace: "nowrap"
           }}
         >
-          📊 My Forwards
+          My Forwards
         </button>
         <button
           onClick={() => setActiveTab("marketplace")}
           style={{
-            padding: "10px 20px",
+            padding: "12px 15px",
             background: activeTab === "marketplace" ? "#0052FF" : "transparent",
             border: "1px solid #333",
             borderRadius: "8px",
             color: "white",
             cursor: "pointer",
-            fontSize: "16px"
+            fontSize: "14px",
+            whiteSpace: "nowrap"
           }}
         >
-          🛒 Marketplace
+          Market
         </button>
-        
+
         <button
-          onClick={() => setActiveTab("ens")}
+          onClick={() => setActiveTab("options")}
           style={{
-            padding: "10px 20px",
-            background: activeTab === "ens" ? "#0052FF" : "transparent",
+            padding: "12px 15px",
+            background: activeTab === "options" ? "#0052FF" : "transparent",
             border: "1px solid #333",
             borderRadius: "8px",
             color: "white",
             cursor: "pointer",
-            fontSize: "16px"
+            fontSize: "14px",
+            whiteSpace: "nowrap"
           }}
         >
-          🎯 ENS Features
+          Options
         </button>
+
 
       </nav>
 
-      {/* Content */}
-      <div style={{ padding: "40px" }}>
-        {activeTab === "lock" && <LockForward />}
+      {/* Content - MOBILE OPTIMIZED */}
+      <div style={{ padding: "20px" }}>
+        {activeTab === "lock" && <LockForward />} 
+
+
         {activeTab === "myforwards" && mounted && <MyForwards />}
         {activeTab === "marketplace" && mounted && <Marketplace />}
-        {activeTab === "ens" && mounted && <ENSShowcase />}
+        {activeTab === "options" && mounted && <BuyOptions />}
+
       </div>
 
-      {/* Footer Info */}
+      {/* Footer - MOBILE OPTIMIZED */}
       <footer style={{
         position: "fixed",
         bottom: 0,
         width: "100%",
-        padding: "15px",
+        padding: "12px 10px",
         background: "#111",
         borderTop: "1px solid #333",
         textAlign: "center",
-        fontSize: "14px",
-        color: "#888"
+        fontSize: "11px",
+        color: "#888",
+        lineHeight: "1.4"
       }}>
-        🔒 Stakes encrypted with iExec-ready architecture | 
-        🧪 Testing on Base Sepolia (FREE testnet!) | 
-        📄 Contract: 0x8F8E...C598
+        🔒 iExec-ready | 🧪 Base Sepolia
       </footer>
     </main>
   );
