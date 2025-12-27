@@ -2,6 +2,8 @@
 
 Forwd is a mobile-first decentralized web app built with Next.js (App Router). The app enables users to create, lock, and trade on-chain "forwards" — position-like financial instruments backed by Solidity smart contracts. It integrates wallet connectivity, ENS (Ethereum Name Service) for human-friendly names, and it has privacy-ready architecture using iExec's protectedDataAddress for encrypted bet data and oracle results.
 
+Get started with Forwd: https://forwd.vercel.app
+
 This app is built as a mini app on Base (a layer-2 network). This README documents how to run, test, and develop the project.
 
 Table of contents
