@@ -5,24 +5,57 @@ import { CONTRACT_ADDRESS_V2, CONTRACT_ABI_V2 } from "../utils/contractV2";
 import { formatEther } from "viem";
 import ENSAddress from './ENSAddress';
 import ENSProfileCard from './ENSProfileCard';
+import { NBA_MATCH_DATA } from "../utils/nbaGames";
 
-const MATCH_DATA = {
-  1: { home: "Galatasaray", away: "Fenerbahçe", league: "Süper Lig", homeOdds: 2100, drawOdds: 3300, awayOdds: 1900 },
-  2: { home: "Beşiktaş", away: "Trabzonspor", league: "Süper Lig", homeOdds: 1700, drawOdds: 3400, awayOdds: 2400 },
-  4: { home: "AS Roma", away: "Lazio", league: "Serie A", homeOdds: 2000, drawOdds: 3200, awayOdds: 1900 },
-  5: { home: "Juventus", away: "Inter Milan", league: "Serie A", homeOdds: 1900, drawOdds: 3400, awayOdds: 2100 },
-  6: { home: "AC Milan", away: "Napoli", league: "Serie A", homeOdds: 1800, drawOdds: 3500, awayOdds: 2200 }
-};
-
-// REAL ENS ADDRESSES - THESE ARE ACTUAL FAMOUS ENS NAMES!
+// TEMP: map some forwards to NBA games instead of football
 const MARKETPLACE_FORWARDS = [
-  { id: 1001, matchId: 1, lockedOdds: 3300, premium: "15000000000000000", owner: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", isForSale: true, stakeAmount: "10000000000000000" },
-  { id: 1002, matchId: 2, lockedOdds: 1700, premium: "20000000000000000", owner: "0x983110309620D911731Ac0932219af06091b6744", isForSale: true, stakeAmount: "15000000000000000" },
-  { id: 1003, matchId: 4, lockedOdds: 1900, premium: "25000000000000000", owner: "0x225f137127d9067788314bc7fcc1f36746a3c3B5", isForSale: true, stakeAmount: "20000000000000000" },
-  { id: 1004, matchId: 5, lockedOdds: 1900, premium: "30000000000000000", owner: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", isForSale: true, stakeAmount: "25000000000000000" },
-  { id: 1005, matchId: 1, lockedOdds: 2100, premium: "18000000000000000", owner: "0x983110309620D911731Ac0932219af06091b6744", isForSale: true, stakeAmount: "12000000000000000" },
-  { id: 1006, matchId: 6, lockedOdds: 2200, premium: "22000000000000000", owner: "0x225f137127d9067788314bc7fcc1f36746a3c3B5", isForSale: true, stakeAmount: "18000000000000000" },
+  {
+    id: 2001,
+    matchId: 101,
+    lockedOdds: 2100,
+    premium: "15000000000000000",
+    owner: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    isForSale: true,
+    stakeAmount: "10000000000000000",
+  },
+  {
+    id: 2002,
+    matchId: 102,
+    lockedOdds: 1800,
+    premium: "20000000000000000",
+    owner: "0x983110309620D911731Ac0932219af06091b6744",
+    isForSale: true,
+    stakeAmount: "15000000000000000",
+  },
+  {
+    id: 2003,
+    matchId: 103,
+    lockedOdds: 2050,
+    premium: "25000000000000000",
+    owner: "0x225f137127d9067788314bc7fcc1f36746a3c3B5",
+    isForSale: true,
+    stakeAmount: "20000000000000000",
+  },
+  {
+    id: 2004,
+    matchId: 104,
+    lockedOdds: 2000,
+    premium: "18000000000000000",
+    owner: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    isForSale: true,
+    stakeAmount: "12000000000000000",
+  },
+  {
+    id: 2005,
+    matchId: 105,
+    lockedOdds: 2100,
+    premium: "22000000000000000",
+    owner: "0x225f137127d9067788314bc7fcc1f36746a3c3B5",
+    isForSale: true,
+    stakeAmount: "18000000000000000",
+  },
 ];
+
 
 export default function Marketplace() {
   const { address, isConnected } = useAccount();
@@ -127,7 +160,7 @@ export default function Marketplace() {
       ) : (
         <div style={{ display: "grid", gap: "20px" }}>
           {forSaleForwards.map((forward) => {
-            const matchData = MATCH_DATA[Number(forward.matchId)];
+            const matchData = NBA_MATCH_DATA[Number(forward.matchId)];
             
             // Determine outcome label
             let outcomeLabel = "Unknown";
@@ -205,7 +238,7 @@ export default function Marketplace() {
                       {matchData.home} vs {matchData.away}
                     </div>
                     <div style={{ fontSize: "11px", color: "#0052FF" }}>
-                      {matchData.league}
+                      {matchData.conference}
                     </div>
                   </div>
                 )}
