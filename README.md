@@ -108,11 +108,6 @@ Contact / Next steps
 - Confirm deployed contract addresses (if any) and update README with addresses and ABIs.
 - Add a `.env.example` file containing the expected environment variables and short descriptions.
 
-If you'd like, I can now:
-- Create a `.env.example` with inferred variable names from `hardhat.config.js` and `scripts/`.
-<This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-onchain`](https://www.npmjs.com/package/create-onchain).
-
-
 ## Getting Started
 
 First, install dependencies:
