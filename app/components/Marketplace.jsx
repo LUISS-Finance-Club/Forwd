@@ -67,7 +67,7 @@ export default function Marketplace() {
     }
 
     loadNba();
-    const id = setInterval(loadNba, 5000);
+    const id = setInterval(loadNba, 50000);
 
     return () => {
       cancelled = true;
