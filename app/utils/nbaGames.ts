@@ -1,53 +1,17 @@
-// app/utils/nbaGames.ts
-
-export type NbaMatch = {
-  id: number;
-  home: string;
-  away: string;
-  conference: string;
-  homeOdds: number; // American-style *1000* so 2100 = +210
-  awayOdds: number;
+export type NbaMarket = {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  commenceTime: string;
+  outcomes: {
+    name: string;     // team name
+    price: number;    // decimal odds
+  }[];
 };
 
-export const NBA_MATCH_DATA: Record<number, NbaMatch> = {
-  101: {
-    id: 101,
-    home: "Los Angeles Lakers",
-    away: "Golden State Warriors",
-    conference: "Western Conference",
-    homeOdds: 2100,
-    awayOdds: 1900,
-  },
-  102: {
-    id: 102,
-    home: "Boston Celtics",
-    away: "Milwaukee Bucks",
-    conference: "Eastern Conference",
-    homeOdds: 1800,
-    awayOdds: 2200,
-  },
-  103: {
-    id: 103,
-    home: "Denver Nuggets",
-    away: "Dallas Mavericks",
-    conference: "Western Conference",
-    homeOdds: 1950,
-    awayOdds: 2050,
-  },
-  104: {
-    id: 104,
-    home: "New York Knicks",
-    away: "Philadelphia 76ers",
-    conference: "Eastern Conference",
-    homeOdds: 2000,
-    awayOdds: 2000,
-  },
-  105: {
-    id: 105,
-    home: "Phoenix Suns",
-    away: "Minnesota Timberwolves",
-    conference: "Western Conference",
-    homeOdds: 1900,
-    awayOdds: 2100,
-  },
-};
+export async function fetchLiveNbaMarkets(): Promise<NbaMarket[]> {
+  const res = await fetch('/api/odds/nba', { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch NBA odds');
+  const { markets } = await res.json();
+  return markets as NbaMarket[];
+}
