@@ -4,7 +4,7 @@ Forwd is a mobile-first decentralized web app built with Next.js (App Router). T
 
 This app is built as a mini app on Base (a layer-2 network). This README documents how to run, test, and develop the project.
 
-you can view it here: https://prestake-navy.vercel.app/ (OPTIMIZED FOR MOBILE)
+you can view it here: forwd.vercel.app (OPTIMIZED FOR MOBILE)
 
 or watch a demo here: https://youtube.com/shorts/MDHS5n-qiKg?si=G3JYdruxRd1nBdhQ
 
