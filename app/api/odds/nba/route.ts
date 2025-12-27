@@ -23,18 +23,33 @@ export async function GET() {
 
     const raw = await res.json();
 
-    const markets = raw.map((game: any) => {
-      const h2h = game.bookmakers?.[0]?.markets?.find(
-        (m: any) => m.key === 'h2h'
-      );
+    type OddsOutcome = { name: string; price: number };
+    type OddsMarket = { key: string; outcomes: OddsOutcome[] };
+    type OddsBookmaker = { markets: OddsMarket[] };
+    type OddsGame = {
+    id: string;
+    home_team: string;
+    away_team: string;
+    commence_time: string;
+    bookmakers: OddsBookmaker[];
+    };
 
-      return {
+    const markets = (raw as OddsGame[]).map((game) => {
+    const h2h = game.bookmakers?.[0]?.markets?.find(
+        (m) => m.key === "h2h"
+    );
+
+    return {
         id: game.id,
         homeTeam: game.home_team,
         awayTeam: game.away_team,
         commenceTime: game.commence_time,
-        outcomes: h2h?.outcomes ?? [],
-      };
+        outcomes:
+        h2h?.outcomes?.map((o) => ({
+            name: o.name,
+            price: o.price,
+        })) ?? [],
+    };
     });
 
     return NextResponse.json({ markets });
